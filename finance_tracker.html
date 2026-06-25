@@ -1,0 +1,2050 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinTrack</title>
+<style>
+:root {
+  --bg: #fafbfc;
+  --card-bg: #ffffff;
+  --primary: #1a1a2e;
+  --accent: #3a3a5c;
+  --danger: #c0392b;
+  --success: #1e8449;
+  --text: #1a1a2e;
+  --text-light: #6b7280;
+  --border: #e5e7eb;
+  --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+  --radius: 6px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background:var(--bg); color:var(--text); min-height:100vh; font-size:14px; line-height:1.6; }
+.container { max-width:1400px; margin:0 auto; padding:20px 40px; }
+
+/* Fixed Header */
+.fixed-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  background: var(--card-bg);
+  border-bottom: none;
+  z-index: 1000;
+  padding: 0 20px;
+}
+
+.header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  padding: 0 20px;
+}
+
+header h1 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--primary);
+  letter-spacing: -0.3px;
+}
+
+header p { display: none; }
+
+/* Tabs */
+.tabs { display: flex; gap: 2px; background: var(--bg); border-radius: 6px; padding: 3px; }
+.tab-btn {
+  padding: 7px 18px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-light);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.tab-btn.active { background: var(--primary); color: #fff; }
+.tab-btn:hover:not(.active) { color: var(--text); }
+
+/* Main Nav */
+.main-nav {
+  position: fixed;
+  top: 40px; left: 0; right: 0;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+  z-index: 999;
+}
+.nav-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+}
+.nav-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.main-nav a {
+  padding: 7px 24px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-light);
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  text-decoration: none;
+  user-select: none;
+}
+.main-nav a:hover { color: var(--text); border-bottom-color: #c4c8cf; }
+.main-nav a.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+/* Content */
+.container { padding-top: 96px; }
+
+/* Tab Content */
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+/* Two-column layout */
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
+.two-col > div { display:flex; flex-direction:column; }
+.two-col .card { margin-bottom:20px; }
+.two-col .card:last-child { margin-bottom:0; }
+@media (max-width:900px) { .two-col { grid-template-columns:1fr; } }
+
+/* Cards */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card h2 { font-size: 15px; font-weight: 600; margin-bottom: 16px; color: var(--primary); letter-spacing: -0.2px; }
+
+/* Form */
+.form-row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+.form-group { flex:1; min-width:120px; }
+.form-group label { display:block; font-size:11px; font-weight: 500; color:var(--text-light); margin-bottom:5px; letter-spacing: 0.3px; }
+.form-group input, .form-group select {
+  width:100%; padding:9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 13px;
+  transition: border 0.15s;
+  background: #fff;
+  color: var(--text);
+}
+.form-group input:focus, .form-group select:focus { outline:none; border-color: var(--primary); }
+
+.btn { padding:9px 18px; border:none; border-radius:4px; font-size:13px; font-weight:500; cursor:pointer; transition:all 0.15s; letter-spacing: 0.2px; }
+.btn-primary { background:var(--primary); color:#fff; }
+.btn-primary:hover { background:#2a2a42; }
+.btn-danger { background:var(--danger); color:#fff; }
+.btn-danger:hover { background:#a93226; }
+.btn-sm { padding:5px 12px; font-size:12px; }
+.btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
+.btn-outline:hover { border-color:var(--primary); color:var(--primary); }
+
+/* Budget Rings */
+.budget-rings { display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:14px; }
+.budget-ring-item {
+  text-align:center; padding:18px 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.15s;
+}
+.budget-ring-item:hover { border-color: #c4c8cf; }
+.budget-ring-item .ring-wrapper { position:relative; width:80px; height:80px; margin:0 auto 10px; }
+.budget-ring-item .ring-wrapper svg { transform:rotate(-90deg); }
+.budget-ring-item .cat-name { font-weight:600; font-size:13px; color:var(--text); }
+.budget-ring-item .ring-info { font-size:11px; color:var(--text-light); margin-top:4px; line-height:1.5; }
+.budget-ring-item .remaining { font-weight:600; font-size:13px; display:block; margin-top:2px; }
+.budget-ring-item .remaining.negative { color:var(--danger); }
+.budget-ring-item .remaining.positive { color:var(--success); }
+
+/* Budget Progress Bars (本月预算概览) */
+.budget-progress-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
+.budget-progress-item:last-child { border-bottom: none; }
+.budget-progress-item .bp-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.budget-progress-item .bp-cat { font-weight: 600; font-size: 13px; }
+.budget-progress-item .bp-amounts { font-size: 12px; color: var(--text-light); text-align: right; line-height: 1.4; }
+.budget-progress-item .bp-bar { height: 6px; background: #e9ecef; border-radius: 3px; overflow: hidden; }
+.budget-progress-item .bp-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+.budget-progress-item .bp-footer { display: flex; justify-content: space-between; margin-top: 4px; font-size: 12px; }
+
+/* Budget bar (tab 2) */
+.budget-bar { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--bg); border-radius:4px; margin-bottom:8px; }
+.budget-bar .cat-name { font-weight:600; min-width:60px; font-size:13px; }
+.budget-bar .budget-info { flex:1; font-size:12px; color:var(--text-light); }
+.budget-bar .remaining { font-weight:600; font-size:14px; }
+.budget-bar .remaining.negative { color:var(--danger); }
+.budget-bar .remaining.positive { color:var(--success); }
+
+/* Budget month accordion */
+.budget-month-group { margin-bottom: 8px; }
+.budget-month-header {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+  background: var(--bg); border-radius: 4px; cursor: pointer; user-select: none;
+  font-size: 13px; font-weight: 600; color: var(--text);
+  transition: background 0.15s;
+}
+.budget-month-header:hover { background: #eef0f2; }
+.budget-month-header .bm-arrow { font-size: 10px; transition: transform 0.2s; color: var(--text-light); }
+.budget-month-header .bm-arrow.open { transform: rotate(90deg); }
+.budget-month-body { display: none; padding: 4px 0 0 0; }
+.budget-month-body.open { display: block; }
+
+/* Category summary rows */
+.cat-summary-row { display:flex; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); cursor:pointer; user-select:none; transition:background 0.1s; }
+.cat-summary-row:hover { background:var(--bg); }
+.cat-summary-row .cs-arrow { width:16px; font-size:10px; color:var(--text-light); transition:transform 0.2s; flex-shrink:0; }
+.cat-summary-row .cs-arrow.expanded { transform:rotate(90deg); }
+.cat-summary-row .cs-cat { font-weight:600; font-size:13px; min-width:70px; }
+.cat-summary-row .cs-count { font-size:11px; color:var(--text-light); margin-left:6px; }
+.cat-summary-row .cs-total { font-weight:600; font-size:14px; margin-left:auto; color:var(--danger); font-variant-numeric:tabular-nums; }
+.cat-detail-list { display:none; }
+.cat-detail-list.expanded { display:block; }
+.cat-detail-list .record-item { padding-left:16px; }
+.cat-detail-list .record-item::before { content:'└'; color:var(--border); margin-right:6px; font-size:12px; }
+.record-list { max-height:360px; overflow-y:auto; }
+.record-item { display:flex; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); font-size:13px; }
+.record-item:hover { background:var(--bg); }
+.record-item .rec-cat { display:inline-block; padding:2px 8px; background:var(--bg); color:var(--text); border-radius:3px; font-size:11px; font-weight:500; margin-right:10px; }
+.record-item .rec-amount { font-weight:600; margin-right:10px; font-variant-numeric: tabular-nums; }
+.record-item .rec-date { color:var(--text-light); font-size:11px; margin-right:10px; }
+.record-item .rec-note { color:var(--text-light); font-size:12px; flex:1; }
+.record-item .rec-del { color:var(--text-light); cursor:pointer; font-size:16px; padding:0 6px; opacity:0.4; transition:opacity 0.15s; }
+.record-item .rec-del:hover { opacity:1; color:var(--danger); }
+
+/* Deposit Plan */
+.deposit-plan { border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:14px; }
+.deposit-plan h3 { font-size:14px; font-weight:600; margin-bottom:8px; color:var(--primary); }
+.deposit-plan .plan-info { font-size:12px; color:var(--text-light); margin-bottom:3px; }
+.deposit-plan .plan-balance { font-size:18px; font-weight:600; margin:8px 0; font-variant-numeric: tabular-nums; }
+.deposit-plan .plan-balance.negative { color:var(--danger); }
+.deposit-usage { margin-top:12px; }
+.deposit-usage h4 { font-size:12px; font-weight:600; margin-bottom:8px; color:var(--text-light); }
+.usage-item { display:flex; align-items:center; padding:7px 10px; background:var(--bg); border-radius:4px; margin-bottom:4px; font-size:12px; }
+.usage-item span { margin-right:10px; }
+.usage-item .usage-amount { font-weight:600; color:var(--danger); font-variant-numeric: tabular-nums; }
+.usage-item .usage-del { color:var(--text-light); cursor:pointer; margin-left:auto; opacity:0.4; }
+.usage-item .usage-del:hover { opacity:1; color:var(--danger); }
+
+/* Modal */
+.modal-overlay { display:none; position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.4); z-index:2000; justify-content:center; align-items:center; }
+.modal-overlay.show { display:flex; }
+.modal { background:#fff; border-radius:12px; padding:28px; min-width:380px; max-width:90vw; max-height:85vh; overflow-y:auto; border:1px solid var(--border); box-shadow:0 8px 32px rgba(0,0,0,0.18); position:relative; }
+.modal h3 { font-size:16px; font-weight:600; margin-bottom:18px; color:var(--primary); }
+.modal .form-row { margin-bottom:14px; }
+.modal .btn { margin-top:8px; margin-right:8px; }
+
+/* Category tags */
+.cat-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.cat-tag { padding:3px 10px; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:3px; font-size:12px; font-weight:500; }
+.cat-tag.selected { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+/* Summary */
+.summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; }
+.summary-item { background:var(--bg); border-radius:4px; padding:12px; text-align:center; }
+.summary-item .val { font-size:18px; font-weight:600; font-variant-numeric: tabular-nums; }
+.summary-item .lbl { font-size:11px; color:var(--text-light); margin-top:2px; }
+
+.empty-state { text-align:center; padding:24px; color:var(--text-light); font-size:13px; }
+
+/* Drag and drop for deposit plans */
+.draggable-plan { cursor: default; transition: box-shadow 0.2s, opacity 0.2s; }
+.draggable-plan.dragging { opacity: 0.5; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.draggable-plan.drag-over { box-shadow: 0 0 0 2px var(--primary); }
+
+@media (max-width:600px) {
+  html, body { overflow-x: hidden; }
+  .container { padding: 12px 12px; }
+  .fixed-header { padding: 0 10px; }
+  .header-inner { padding: 0 10px; }
+  .card { padding: 16px; margin-bottom: 12px; }
+  .form-row { flex-direction:column; }
+  .form-group { min-width: 0; flex: 1 1 auto; }
+  .form-group input, .form-group select { padding: 8px 10px; font-size: 13px; width: 100%; }
+  .two-col { gap: 12px; }
+
+  /* Global: prevent any input/select from overflowing */
+  input, select, textarea { max-width: 100%; box-sizing: border-box; }
+  input[type="date"], input[type="month"] { width: 100%; }
+
+  /* Nav: tabs stay, buttons wrap below */
+  .main-nav { top: 36px; }
+  .main-nav a { padding: 6px 12px; font-size: 11px; }
+  .nav-inner { padding: 0 10px; flex-wrap: wrap; }
+  .nav-actions { margin-left: 0; width: 100%; justify-content: flex-end; padding: 3px 0 5px; gap: 4px; }
+  .nav-actions .btn-sm { padding: 3px 7px; font-size: 10px; }
+
+  /* Offset for fixed header (36px) + wrapped nav (~60px) */
+  .container { padding-top: 96px; }
+
+  /* Modal */
+  .modal { min-width: unset; max-width: 94vw; padding: 20px 16px; }
+  .modal-overlay { align-items: flex-start; padding-top: 20px; }
+
+  /* Budget rings */
+  .budget-rings { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+  .budget-ring-item { padding: 14px 8px; }
+  .budget-ring-item .ring-wrapper { width: 64px; height: 64px; }
+
+  /* Summary grid */
+  .summary-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
+
+  /* Deposit plan */
+  .deposit-plan { padding: 14px; }
+
+  /* Budget bar */
+  .budget-bar { flex-wrap: wrap; gap: 4px; padding: 8px 10px; }
+
+  /* Tabs */
+  .tabs { gap: 0; }
+  .tab-btn { padding: 6px 12px; font-size: 12px; }
+
+  /* Budget month header */
+  .budget-month-header { font-size: 12px; padding: 6px 10px; }
+
+  /* Record items */
+  .record-item { font-size: 12px; padding: 8px 0; flex-wrap: wrap; }
+  .record-item .rec-cat { font-size: 10px; padding: 1px 6px; }
+
+  /* Cat summary row */
+  .cat-summary-row { flex-wrap: wrap; }
+  .cat-summary-row .cs-cat { min-width: 50px; font-size: 12px; }
+
+  /* Copy budget row */
+  .copy-budget-row { flex-wrap: wrap; gap: 4px; align-items: center; }
+
+  /* Fixed header shrink */
+  .fixed-header .header-inner { height: 36px; }
+  .fixed-header .header-inner h1 { font-size: 14px; }
+
+  /* Fix flex children that might overflow */
+  .two-col > div { min-width: 0; }
+}
+</style>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+<!-- Hidden file input for import -->
+<input type="file" id="import-file-input" accept=".xlsx,.xls" style="display:none;" onchange="handleFileImport(event)">
+
+<!-- Fixed Header -->
+<div class="fixed-header">
+  <div class="header-inner">
+    <h1>FinTrack</h1>
+  </div>
+</div>
+
+<!-- Main Navigation -->
+<div class="main-nav" id="main-nav">
+  <div class="nav-inner">
+    <a class="active" data-tab="tab-expense">记账</a>
+    <a data-tab="tab-budget">预算</a>
+    <a data-tab="tab-deposit">存款</a>
+    <div class="nav-actions">
+      <button class="btn btn-sm btn-outline" onclick="copyDataToClipboard()" title="复制全部数据到剪贴板">复制数据</button>
+      <button class="btn btn-sm btn-outline" onclick="importFromClipboard()" title="从剪贴板粘贴数据导入">粘贴导入</button>
+      <button class="btn btn-sm btn-outline" onclick="document.getElementById('import-file-input').click()" title="从Excel导入数据">导入Excel</button>
+      <button class="btn btn-sm btn-outline" onclick="exportToExcel()" title="导出数据为Excel">导出Excel</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ==================== TAB 1: 每日记账 ==================== -->
+<div class="tab-panel active" id="tab-expense">
+
+  <!-- 两栏：左侧（今日预算概览 高度跟随右侧）+ 右侧（记一笔 + 今日记录 + 已记录） -->
+  <div class="two-col">
+
+    <!-- 左栏：本月预算管理 -->
+    <div>
+      <div class="card" id="budget-overview-card" style="display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span id="budget-prev-month" style="cursor:pointer;font-size:14px;color:var(--text-light);user-select:none;padding:2px 4px;" title="上一个月" onclick="navigateBudgetMonth(-1)">◀</span>
+            <h2 style="margin-bottom:0;min-width:100px;text-align:center;" id="budget-view-title">本月预算管理</h2>
+            <span id="budget-next-month" style="cursor:pointer;font-size:14px;color:var(--text-light);user-select:none;padding:2px 4px;" title="下一个月" onclick="navigateBudgetMonth(1)">▶</span>
+          </div>
+          <span id="budget-total-summary" style="font-size:13px;color:var(--text-light);white-space:nowrap;"></span>
+        </div>
+        <div id="today-budget-overview" style="flex:1;">
+          <div class="empty-state" style="width:100%;">暂无预算设置，请先在「预算管理」中设置</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右栏：记一笔 + 今日记录 + 已记录 -->
+    <div style="display:flex;flex-direction:column;" id="right-column">
+      <div class="card" id="expense-form-card" style="min-height:235px;">
+        <h2>记一笔</h2>
+        <div class="summary-grid" id="today-summary" style="margin-bottom:14px;min-height:0;"></div>
+        <form onsubmit="addExpense();return false;">
+        <div class="form-row">
+          <div class="form-group">
+            <label>金额 (¥)</label>
+            <input type="number" id="exp-amount" placeholder="0.00" step="0.01" min="0">
+          </div>
+          <div class="form-group">
+            <label>品类</label>
+            <select id="exp-category" required>
+              <option value="" disabled selected hidden>请选择品类</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>日期</label>
+            <input type="date" id="exp-date">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex:3">
+            <label>备注（可选）</label>
+            <input type="text" id="exp-note" placeholder="如：午餐外卖">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">记录支出</button>
+        </form>
+      </div>
+
+      <!-- 已记录入口 -->
+      <div class="card" id="history-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleHistory()">
+          <h2 style="margin-bottom:0;">已记录</h2>
+          <span id="history-toggle-arrow" style="font-size:11px;color:var(--text-light);transition:transform 0.2s;">▶</span>
+        </div>
+        <div id="history-panel" style="display:none;margin-top:14px;">
+          <div style="margin-bottom:12px;">
+            <input type="date" id="history-date" onchange="renderHistory()" style="padding:8px 12px;border:1px solid var(--border);border-radius:4px;font-size:13px;">
+          </div>
+          <div class="record-list" id="history-records">
+            <div class="empty-state">选择日期查看记录</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== TAB 2: 预算管理 ==================== -->
+<div class="tab-panel" id="tab-budget">
+  <div class="card">
+    <h2>设置每月预算</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>目标月份</label>
+        <input type="month" id="budget-month" onchange="calcDailyPreview()">
+      </div>
+      <div class="form-group">
+        <label>品类</label>
+        <select id="budget-category" required>
+            <option value="" disabled selected hidden>请选择品类</option>
+          </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>每月预算 (¥)</label>
+        <input type="number" id="budget-amount" placeholder="0.00" step="0.01" min="0" oninput="calcDailyPreview()">
+      </div>
+      <div class="form-group">
+        <label>是否按天拆分</label>
+        <select id="budget-split-day" onchange="calcDailyPreview()">
+          <option value="no" selected>否</option>
+          <option value="yes">是</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <span id="budget-daily-preview" style="color:var(--text-light);font-size:12px;">—</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="setBudget()">保存预算</button>
+    <p style="font-size:12px;color:var(--text-light);margin-top:6px;">每月预算将按该月天数自动切分为每日预算</p>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span style="font-size:12px;color:var(--text-light);white-space:nowrap;">从</span>
+      <input type="month" id="copy-source-month" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:12px;">
+      <span style="font-size:12px;color:var(--text-light);white-space:nowrap;">复制预算到</span>
+      <input type="month" id="copy-target-month" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:12px;">
+      <button class="btn btn-sm btn-outline" onclick="copyBudget()">复制预算</button>
+    </div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <label style="font-size:11px;font-weight:500;color:var(--text-light);">品类管理</label>
+        <span class="btn btn-sm btn-primary" style="cursor:pointer;" onclick="showAddCategoryInline()">+ 新增品类</span>
+      </div>
+      <div id="add-cat-inline" style="display:none;margin-bottom:10px;">
+        <input type="text" id="new-category-name-inline" placeholder="输入新品类名称" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:4px;margin-bottom:6px;font-size:13px;">
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-primary" onclick="confirmAddCategoryInline()">添加</button>
+          <button class="btn btn-sm btn-outline" onclick="cancelAddCategoryInline()">取消</button>
+        </div>
+      </div>
+      <div class="cat-tags" id="category-tags"></div>
+      <div id="cat-hint" style="font-size:11px;color:var(--text-light);margin-top:6px;">点击品类切换「排除统计」状态（带☆），排除统计的品类将在概览括号中排除计算</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <h2 style="margin-bottom:0;">当前预算设置</h2>
+      <span class="btn btn-sm btn-outline" style="cursor:pointer;font-size:11px;" onclick="toggleAllBudgets()" id="toggle-all-btn">展开全部</span>
+    </div>
+    <div id="budget-list">
+      <div class="empty-state">暂无预算设置</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 3: 存款计划 ==================== -->
+<div class="tab-panel" id="tab-deposit">
+  <div id="deposit-plans"></div>
+</div>
+
+<!-- Modal: 创建存款计划 -->
+<div class="modal-overlay" id="create-plan-modal">
+  <div class="modal">
+    <h3>创建存款计划</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>存款名称</label>
+        <input type="text" id="dp-name" placeholder="如：旅行基金">
+      </div>
+      <div class="form-group">
+        <label>存款品类</label>
+        <input type="text" id="dp-category" placeholder="如：定期存款、理财">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>存款路径</label>
+        <input type="text" id="dp-path" placeholder="如：XX银行卡、余额宝">
+      </div>
+      <div class="form-group">
+        <label>每月期望存款 (¥)</label>
+        <input type="number" id="dp-monthly" placeholder="0.00" step="0.01" min="0">
+      </div>
+    </div>
+    <div class="form-row" id="dp-saved-row">
+      <div class="form-group">
+        <label>已存入 (¥)</label>
+        <input type="number" id="dp-saved" placeholder="0.00" step="0.01" min="0">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>每月自动存入</label>
+        <select id="dp-auto-deposit" onchange="toggleAutoDepositFields()">
+          <option value="yes" selected>是</option>
+          <option value="no">否</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>自动存入金额 (¥)</label>
+        <input type="number" id="dp-auto-amount" placeholder="等于月期望" step="0.01" min="0" disabled>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="createDepositPlan()">创建存款计划</button>
+    <button class="btn btn-outline" onclick="closeCreatePlanModal()">取消</button>
+  </div>
+</div>
+
+<!-- Modal: 记录存款 -->
+<div class="modal-overlay" id="deposit-modal">
+  <div class="modal">
+    <h3>记录操作</h3>
+    <input type="hidden" id="deposit-plan-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label>操作类型</label>
+        <select id="deposit-type">
+          <option value="withdraw" selected>取出</option>
+          <option value="deposit">存入</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label id="deposit-amount-label">存入金额 (¥)</label>
+        <input type="number" id="deposit-amount" placeholder="0.00" step="0.01" min="0.01">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>日期</label>
+        <input type="date" id="deposit-date">
+      </div>
+      <div class="form-group">
+        <label>来源/去向</label>
+        <input type="text" id="deposit-source" placeholder="如：工资、奖金 / 大额消费">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>备注（可选）</label>
+        <input type="text" id="deposit-note" placeholder="">
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="recordDeposit()">确认记录</button>
+    <button class="btn btn-outline" onclick="closeDepositModal()">取消</button>
+  </div>
+</div>
+
+</div>
+
+<!-- 粘贴导入弹窗 -->
+<div class="modal-overlay" id="clipboard-import-modal">
+  <div class="modal" style="max-width:480px;">
+    <h3>粘贴导入数据</h3>
+    <p style="font-size:12px;color:var(--text-light);margin-bottom:10px;">将从其他设备复制的数据粘贴到下方，将<strong>覆盖</strong>当前数据</p>
+    <textarea id="clipboard-import-text" rows="6" placeholder="在此粘贴 JSON 数据..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:monospace;resize:vertical;"></textarea>
+    <div style="margin-top:14px;display:flex;gap:8px;">
+      <button class="btn btn-primary" onclick="confirmClipboardImport()">导入并覆盖</button>
+      <button class="btn btn-outline" onclick="closeClipboardImport()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 通用确认/提示弹窗 -->
+<div class="modal-overlay" id="custom-dialog-overlay">
+  <div class="modal" style="max-width:480px;text-align:center;">
+    <h3 id="custom-dialog-title" style="text-align:center;">提示</h3>
+    <p id="custom-dialog-msg" style="margin-bottom:20px;font-size:14px;color:var(--text);white-space:pre-wrap;text-align:center;"></p>
+    <div id="custom-dialog-buttons" style="display:flex;gap:10px;justify-content:center;"></div>
+  </div>
+</div>
+
+<script>
+// ==================== 自定义弹窗 ====================
+let _customDialogOnCancel = null;
+
+function showCustomAlert(msg, title) {
+  return new Promise(resolve => {
+    document.getElementById('custom-dialog-title').textContent = title || '提示';
+    document.getElementById('custom-dialog-msg').textContent = msg;
+    document.getElementById('custom-dialog-buttons').innerHTML = '<button class="btn btn-primary" id="custom-dialog-ok">确定</button>';
+    document.getElementById('custom-dialog-overlay').classList.add('show');
+    _customDialogOnCancel = resolve;
+    document.getElementById('custom-dialog-ok').onclick = () => {
+      document.getElementById('custom-dialog-overlay').classList.remove('show');
+      _customDialogOnCancel = null;
+      resolve();
+    };
+  });
+}
+
+function showCustomConfirm(msg, title) {
+  return new Promise(resolve => {
+    document.getElementById('custom-dialog-title').textContent = title || '确认';
+    document.getElementById('custom-dialog-msg').textContent = msg;
+    document.getElementById('custom-dialog-buttons').innerHTML = '<button class="btn btn-outline" id="custom-dialog-cancel">取消</button><button class="btn btn-primary" id="custom-dialog-confirm">确定</button>';
+    document.getElementById('custom-dialog-overlay').classList.add('show');
+    _customDialogOnCancel = () => { document.getElementById('custom-dialog-overlay').classList.remove('show'); resolve(false); };
+    document.getElementById('custom-dialog-confirm').onclick = () => {
+      document.getElementById('custom-dialog-overlay').classList.remove('show');
+      _customDialogOnCancel = null;
+      resolve(true);
+    };
+    document.getElementById('custom-dialog-cancel').onclick = () => {
+      document.getElementById('custom-dialog-overlay').classList.remove('show');
+      _customDialogOnCancel = null;
+      resolve(false);
+    };
+  });
+}
+
+function showCustomPrompt(msg, title, defaultValue) {
+  return new Promise(resolve => {
+    const inputId = 'custom-dialog-input';
+    document.getElementById('custom-dialog-title').textContent = title || '输入';
+    document.getElementById('custom-dialog-msg').innerHTML = msg + '<br><input type="number" id="' + inputId + '" value="' + (defaultValue || '') + '" placeholder="0.00" step="0.01" min="0" style="margin-top:10px;width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:4px;font-size:14px;text-align:center;">';
+    document.getElementById('custom-dialog-buttons').innerHTML = '<button class="btn btn-outline" id="custom-dialog-cancel">取消</button><button class="btn btn-primary" id="custom-dialog-confirm">确定</button>';
+    document.getElementById('custom-dialog-overlay').classList.add('show');
+    _customDialogOnCancel = () => { document.getElementById('custom-dialog-overlay').classList.remove('show'); resolve(null); };
+    setTimeout(() => { const inp = document.getElementById(inputId); if(inp) inp.focus(); }, 100);
+    document.getElementById('custom-dialog-confirm').onclick = () => {
+      const val = document.getElementById(inputId).value.trim();
+      document.getElementById('custom-dialog-overlay').classList.remove('show');
+      _customDialogOnCancel = null;
+      resolve(val);
+    };
+    document.getElementById('custom-dialog-cancel').onclick = () => {
+      document.getElementById('custom-dialog-overlay').classList.remove('show');
+      _customDialogOnCancel = null;
+      resolve(null);
+    };
+  });
+}
+
+// ==================== 数据存储 ====================
+const STORAGE_KEY = 'finance_tracker_data';
+
+function loadData() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  const result = raw ? JSON.parse(raw) : {
+    categories: ['餐饮', '交通', '购物', '娱乐', '住房', '医疗', '教育', '其他'],
+    summaryExcludeCategories: ['住房'],  // categories to exclude from bracket summary
+    budgets: {},          // { "YYYY-MM": { category: {amount, splitByDay} } }
+    expenses: [],         // { id, amount, category, date, note, createdAt }
+    depositPlans: []      // { id, name, category, path, monthlyGoal, saved, deposits: [{id, amount, date, source, note}] }
+  };
+  // Migrate old budget format (number) to new format ({amount, splitByDay})
+  for (const month of Object.keys(result.budgets)) {
+    // Validate month key is YYYY-MM format
+    if (!/^\d{4}-\d{2}$/.test(month)) {
+      delete result.budgets[month];
+      continue;
+    }
+    const entries = result.budgets[month];
+    for (const cat of Object.keys(entries)) {
+      if (typeof entries[cat] === 'number') {
+        entries[cat] = { amount: entries[cat], splitByDay: true };
+      }
+      // Remove entries without valid amount
+      if (!entries[cat] || entries[cat].amount == null || isNaN(entries[cat].amount)) {
+        delete entries[cat];
+      }
+    }
+    // Remove empty month
+    if (Object.keys(entries).length === 0) {
+      delete result.budgets[month];
+    }
+  }
+  // Migrate old deposit plan format
+  result.depositPlans = result.depositPlans.map(p => {
+    if (p.deposits !== undefined) {
+      // Ensure all deposits have 'type' field
+      p.deposits = p.deposits.map(d => ({ ...d, type: d.type || 'deposit' }));
+      p.saved = p.deposits.reduce((s, d) => s + (d.type === 'withdraw' ? -d.amount : d.amount), 0);
+      return p;
+    }
+    // Very old format: migrate from usages
+    return {
+      id: p.id,
+      name: p.name,
+      category: p.category || '其他',
+      path: p.path || '',
+      monthlyGoal: p.target || 0,
+      saved: (p.usages || []).reduce((s, u) => s + u.amount, 0),
+      deposits: (p.usages || []).map(u => ({
+        id: u.id,
+        amount: u.amount,
+        date: u.date,
+        source: u.scene || '未分类',
+        note: u.note || '',
+        type: 'deposit'
+      }))
+    };
+  });
+  // Migrate: ensure summaryExcludeCategories exists
+  if (!result.summaryExcludeCategories) {
+    result.summaryExcludeCategories = result.categories.includes('住房') ? ['住房'] : [];
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(result));
+  return result;
+}
+
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+let data = loadData();
+let budgetViewMonth = currentMonthStr(); // 预算管理当前查看的月份
+
+// ==================== 工具函数 ====================
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function currentMonthStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+
+function prevMonthStr(monthStr) {
+  const [y, m] = monthStr.split('-').map(Number);
+  const d = new Date(y, m - 2, 1);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+
+function daysInMonth(monthStr) {
+  const [y, m] = monthStr.split('-').map(Number);
+  return new Date(y, m, 0).getDate();
+}
+
+function getDailyBudget(cat, monthStr) {
+  const monthBudgets = data.budgets[monthStr];
+  if (!monthBudgets || !monthBudgets[cat]) return 0;
+  const b = monthBudgets[cat];
+  if (!b.splitByDay) return 0;
+  const days = daysInMonth(monthStr);
+  return b.amount / days;
+}
+
+function getMonthBudget(cat, monthStr) {
+  const monthBudgets = data.budgets[monthStr];
+  if (!monthBudgets || !monthBudgets[cat]) return null;
+  return monthBudgets[cat]; // { amount, splitByDay }
+}
+
+function formatMoney(n) {
+  return '¥' + Number(n).toFixed(2);
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2,6); }
+
+// ==================== Tab 切换 ====================
+document.querySelectorAll('.main-nav a').forEach(link => {
+  link.addEventListener('click', () => {
+    document.querySelectorAll('.main-nav a').forEach(l => l.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    link.classList.add('active');
+    document.getElementById(link.dataset.tab).classList.add('active');
+    if (link.dataset.tab === 'tab-expense') { renderMonthBudget(); renderTodayRecords(); renderHistory(); }
+    if (link.dataset.tab === 'tab-budget') renderBudgetTab();
+    if (link.dataset.tab === 'tab-deposit') renderDepositPlans();
+  });
+});
+
+// ==================== 品类管理 ====================
+function populateCategorySelects() {
+  const selects = ['exp-category', 'budget-category'];
+  selects.forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const val = sel.value;
+    sel.innerHTML = '<option value="" disabled selected hidden>请选择品类</option>';
+    data.categories.forEach(c => {
+      sel.innerHTML += `<option value="${c}">${c}</option>`;
+    });
+    sel.value = val;
+  });
+  renderCategoryTags();
+}
+
+function showAddCategoryInline() {
+  document.getElementById('add-cat-inline').style.display = 'block';
+  document.getElementById('new-category-name-inline').value = '';
+  document.getElementById('new-category-name-inline').focus();
+}
+
+async function confirmAddCategoryInline() {
+  const name = document.getElementById('new-category-name-inline').value.trim();
+  if (!name) return showCustomAlert('请输入品类名称');
+  if (data.categories.includes(name)) return showCustomAlert('该品类已存在');
+  data.categories.push(name);
+  saveData(data);
+  document.getElementById('add-cat-inline').style.display = 'none';
+  populateCategorySelects();
+  document.getElementById('budget-category').value = name;
+}
+
+function cancelAddCategoryInline() {
+  document.getElementById('add-cat-inline').style.display = 'none';
+}
+
+function renderCategoryTags() {
+  const container = document.getElementById('category-tags');
+  if (!container) return;
+  const excl = data.summaryExcludeCategories || [];
+  container.innerHTML = data.categories.map(c => {
+    const isExcluded = excl.includes(c);
+    return `<span class="cat-tag ${isExcluded?'selected':''}" style="cursor:pointer;" onclick="toggleSummaryExclude('${c}')" title="${isExcluded?'已排除统计，点击取消':'点击设为排除统计'}">${c}${isExcluded?' ☆':''} <span style="cursor:pointer;margin-left:4px;opacity:0.7" onclick="event.stopPropagation();deleteCategory('${c}')" title="删除品类">&times;</span></span>`;
+  }).join('');
+}
+
+function toggleSummaryExclude(cat) {
+  if (!data.summaryExcludeCategories) data.summaryExcludeCategories = [];
+  const idx = data.summaryExcludeCategories.indexOf(cat);
+  if (idx >= 0) {
+    data.summaryExcludeCategories.splice(idx, 1);
+  } else {
+    data.summaryExcludeCategories.push(cat);
+  }
+  saveData(data);
+  renderCategoryTags();
+  renderMonthBudget();
+}
+
+async function deleteCategory(name) {
+  if (!(await showCustomConfirm(`确定删除品类「${name}」？相关的预算设置也将被清除。`))) return;
+  data.categories = data.categories.filter(c => c !== name);
+  // Also remove from summaryExcludeCategories
+  if (data.summaryExcludeCategories) {
+    data.summaryExcludeCategories = data.summaryExcludeCategories.filter(c => c !== name);
+  }
+  // Remove budget entries for this category across all months
+  for (const month of Object.keys(data.budgets)) {
+    delete data.budgets[month][name];
+    if (Object.keys(data.budgets[month]).length === 0) delete data.budgets[month];
+  }
+  saveData(data);
+  populateCategorySelects();
+  renderBudgetTab();
+}
+
+// ==================== TAB 1: 记账 ====================
+function getTodayExpenses() {
+  const today = todayStr();
+  return data.expenses.filter(e => e.date === today);
+}
+
+function getTodayExpensesByCategory() {
+  const today = todayStr();
+  const map = {};
+  data.expenses.filter(e => e.date === today).forEach(e => {
+    map[e.category] = (map[e.category] || 0) + e.amount;
+  });
+  return map;
+}
+
+function getMonthExpensesByCategory(monthStr) {
+  const prefix = monthStr || currentMonthStr();
+  const map = {};
+  data.expenses.filter(e => e.date.startsWith(prefix)).forEach(e => {
+    map[e.category] = (map[e.category] || 0) + e.amount;
+  });
+  return map;
+}
+
+function renderMonthBudget() {
+  const container = document.getElementById('today-budget-overview');
+  const totalSummary = document.getElementById('budget-total-summary');
+  const titleEl = document.getElementById('budget-view-title');
+  const month = budgetViewMonth;
+  const isCurrent = month === currentMonthStr();
+  const todaySpent = getTodayExpensesByCategory();
+  const monthSpent = getMonthExpensesByCategory(month);
+  const monthBudgets = data.budgets[month] || {};
+
+  // Update title
+  if (titleEl) {
+    titleEl.textContent = isCurrent ? '本月预算管理' : month + ' 预算管理';
+  }
+
+  // Update navigation arrows
+  const prevBtn = document.getElementById('budget-prev-month');
+  const nextBtn = document.getElementById('budget-next-month');
+  if (prevBtn) prevBtn.style.visibility = 'visible';
+  if (nextBtn) {
+    nextBtn.style.visibility = isCurrent ? 'hidden' : 'visible';
+  }
+
+  if (Object.keys(monthBudgets).length === 0) {
+    container.innerHTML = '<div class="empty-state">当前月份暂无预算设置</div>';
+    if (totalSummary) totalSummary.textContent = '';
+    syncBudgetCardHeight();
+    return;
+  }
+
+  // Calculate totals
+  let totalBudget = 0;
+  let totalSpent = 0;
+  let exHousingBudget = 0;
+  let exHousingSpent = 0;
+  const exclCats = data.summaryExcludeCategories || [];
+  for (const [cat, b] of Object.entries(monthBudgets)) {
+    totalBudget += b.amount;
+    totalSpent += (monthSpent[cat] || 0);
+    if (!exclCats.includes(cat)) {
+      exHousingBudget += b.amount;
+      exHousingSpent += (monthSpent[cat] || 0);
+    }
+  }
+  if (totalSummary) {
+    const color = totalSpent > totalBudget ? 'var(--danger)' : (totalSpent < totalBudget ? 'var(--success)' : 'var(--text)');
+    const exColor = exHousingSpent > exHousingBudget ? 'var(--danger)' : (exHousingSpent < exHousingBudget ? 'var(--success)' : 'var(--text)');
+    totalSummary.innerHTML = `已花 <strong style="color:${color};">${formatMoney(totalSpent)}<span style="font-weight:400;font-size:11px;">(${formatMoney(exHousingSpent)})</span></strong> / 预算 <strong>${formatMoney(totalBudget)}<span style="font-weight:400;font-size:11px;">(${formatMoney(exHousingBudget)})</span></strong>`;
+  }
+
+  const days = daysInMonth(month);
+  let html = '';
+
+  for (const [cat, b] of Object.entries(monthBudgets)) {
+    const budget = b.amount;
+    const splitByDay = b.splitByDay;
+    // For non-current months, always use monthly data
+    const s = (splitByDay && isCurrent) ? (todaySpent[cat] || 0) : (monthSpent[cat] || 0);
+    const limit = (splitByDay && isCurrent) ? (budget / days) : budget;
+    const remaining = limit - s;
+    const overBudget = remaining < 0;
+    const pct = Math.min((s / limit) * 100, 100);
+    const barColor = remaining < 0 ? '#c0392b' : (remaining === 0 ? '#1a1a2e' : '#27ae60');
+    const label = (splitByDay && isCurrent) ? '今日' : '本月';
+    const spentLabel = (splitByDay && isCurrent) ? '今日已花' : '已花';
+
+    html += `
+      <div class="budget-progress-item">
+        <div class="bp-header">
+          <span class="bp-cat">${cat}${(!isCurrent&&splitByDay)?'<span style="font-size:10px;color:var(--text-light);margin-left:4px;">按月计</span>':(splitByDay?'':'<span style="font-size:10px;color:var(--text-light);margin-left:4px;">按月</span>')}</span>
+          <span class="bp-amounts">${spentLabel} ${formatMoney(s)} / ${label} ${formatMoney(limit)}</span>
+        </div>
+        <div class="bp-bar">
+          <div class="bp-bar-fill" style="width:${pct}%;background:${barColor};"></div>
+        </div>
+        <div class="bp-footer">
+          <span style="color:${overBudget?'var(--danger)':'var(--text-light)'};">
+            ${overBudget ? '超支 ' : '剩余 '}${formatMoney(Math.abs(remaining))}
+          </span>
+          <span style="font-weight:600;color:${barColor};">${Math.round(pct)}%</span>
+        </div>
+      </div>`;
+  }
+
+  container.innerHTML = html;
+  syncBudgetCardHeight();
+}
+
+function navigateBudgetMonth(dir) {
+  const [y, m] = budgetViewMonth.split('-').map(Number);
+  const d = new Date(y, m - 1 + dir, 1);
+  const newMonth = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+  const cur = currentMonthStr();
+  // Don't navigate past current month
+  if (newMonth > cur) return;
+  budgetViewMonth = newMonth;
+  renderMonthBudget();
+}
+
+function syncBudgetCardHeight() {
+  const leftCard = document.getElementById('budget-overview-card');
+  const rightCol = document.getElementById('right-column');
+  if (!leftCard || !rightCol) return;
+  leftCard.style.minHeight = '';
+  const rightH = rightCol.offsetHeight;
+  if (rightH > 0) {
+    leftCard.style.minHeight = rightH + 'px';
+  }
+}
+
+async function addExpense() {
+  const amount = parseFloat(document.getElementById('exp-amount').value);
+  const category = document.getElementById('exp-category').value;
+  const date = document.getElementById('exp-date').value || todayStr();
+  const note = document.getElementById('exp-note').value.trim();
+
+  if (!amount || amount <= 0) return showCustomAlert('请输入有效金额');
+  if (!category) return showCustomAlert('请选择品类');
+
+  data.expenses.push({
+    id: uid(),
+    amount,
+    category,
+    date,
+    note,
+    createdAt: new Date().toISOString()
+  });
+  saveData(data);
+
+  // Reset form
+  document.getElementById('exp-amount').value = '';
+  document.getElementById('exp-note').value = '';
+
+  renderMonthBudget();
+  renderTodayRecords();
+  renderHistory();
+}
+
+async function deleteExpense(id) {
+  if (!(await showCustomConfirm('确定删除这条记录？'))) return;
+  data.expenses = data.expenses.filter(e => e.id !== id);
+  saveData(data);
+  renderMonthBudget();
+  renderTodayRecords();
+  renderHistory();
+}
+
+function renderTodayRecords() {
+  const records = getTodayExpenses();
+  const summaryDiv = document.getElementById('today-summary');
+
+  const total = records.reduce((s, e) => s + e.amount, 0);
+  const count = records.length;
+
+  const totalFmt = count === 0 ? '--' : formatMoney(total);
+  const countFmt = count === 0 ? '--' : count;
+
+  let summaryHtml = `<div class="summary-item"><div class="val" style="color:var(--danger)">${totalFmt}</div><div class="lbl">今日总支出</div></div>`;
+  summaryHtml += `<div class="summary-item"><div class="val">${countFmt}</div><div class="lbl">记录笔数</div></div>`;
+  summaryDiv.innerHTML = summaryHtml;
+  syncBudgetCardHeight();
+}
+
+function toggleHistory() {
+  const panel = document.getElementById('history-panel');
+  const arrow = document.getElementById('history-toggle-arrow');
+  const isOpen = panel.style.display === 'block';
+  panel.style.display = isOpen ? 'none' : 'block';
+  arrow.textContent = isOpen ? '▶' : '▼';
+  arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(0deg)';
+  requestAnimationFrame(syncBudgetCardHeight);
+}
+
+function renderHistory() {
+  const date = document.getElementById('history-date').value;
+  if (!date) return;
+
+  const records = data.expenses.filter(e => e.date === date);
+  const container = document.getElementById('history-records');
+
+  if (records.length === 0) {
+    container.innerHTML = '<div class="empty-state">该日期没有记录</div>';
+    return;
+  }
+
+  records.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  container.innerHTML = records.map(r => `
+    <div class="record-item">
+      <span class="rec-cat">${r.category}</span>
+      <span class="rec-amount" style="color:var(--danger)">-${formatMoney(r.amount)}</span>
+      <span class="rec-date">${r.date}</span>
+      <span class="rec-note">${r.note || ''}</span>
+      <span class="rec-del" onclick="deleteExpense('${r.id}')">&times;</span>
+    </div>
+  `).join('');
+}
+
+// ==================== TAB 2: 预算管理 ====================
+function calcDailyPreview() {
+  const month = document.getElementById('budget-month').value;
+  const amount = parseFloat(document.getElementById('budget-amount').value);
+  const split = document.getElementById('budget-split-day').value === 'yes';
+  const preview = document.getElementById('budget-daily-preview');
+  if (!month || !amount || amount <= 0) {
+    preview.textContent = '—';
+    return;
+  }
+  if (split) {
+    const days = daysInMonth(month);
+    preview.textContent = formatMoney(amount / days);
+  } else {
+    preview.textContent = formatMoney(amount) + ' (按月)';
+  }
+}
+
+function renderBudgetTab() {
+  renderBudgetList();
+}
+
+async function setBudget() {
+  const month = document.getElementById('budget-month').value;
+  const category = document.getElementById('budget-category').value;
+  const amount = parseFloat(document.getElementById('budget-amount').value);
+  const splitByDay = document.getElementById('budget-split-day').value === 'yes';
+  if (!month) return showCustomAlert('请选择目标月份');
+  if (!category) return showCustomAlert('请选择品类');
+  if (!amount || amount <= 0) return showCustomAlert('请输入有效预算金额');
+
+  if (!data.budgets[month]) data.budgets[month] = {};
+  data.budgets[month][category] = { amount, splitByDay };
+  saveData(data);
+  document.getElementById('budget-amount').value = '';
+  document.getElementById('budget-daily-preview').textContent = '—';
+  document.getElementById('budget-split-day').value = 'no';
+  renderBudgetList();
+  renderMonthBudget();
+}
+
+async function deleteBudget(month, cat) {
+  if (!(await showCustomConfirm(`确定删除「${cat}」在 ${month} 的预算设置？`))) return;
+  if (data.budgets[month]) {
+    delete data.budgets[month][cat];
+    if (Object.keys(data.budgets[month]).length === 0) delete data.budgets[month];
+  }
+  saveData(data);
+  renderBudgetList();
+  renderMonthBudget();
+}
+
+async function deleteAllBudgetsInMonth(month) {
+  const monthBudgets = data.budgets[month];
+  if (!monthBudgets) return;
+  const n = Object.keys(monthBudgets).length;
+  if (!(await showCustomConfirm(`确定删除 ${month} 的全部 ${n} 项预算设置？此操作不可撤销。`))) return;
+  delete data.budgets[month];
+  saveData(data);
+  renderBudgetList();
+  renderMonthBudget();
+}
+
+async function copyBudget() {
+  const sourceMonth = document.getElementById('copy-source-month').value;
+  const targetMonth = document.getElementById('copy-target-month').value;
+  if (!sourceMonth) return showCustomAlert('请选择来源月份');
+  if (!targetMonth) return showCustomAlert('请选择目标月份');
+  if (sourceMonth === targetMonth) return showCustomAlert('来源月份和目标月份不能相同');
+  const src = data.budgets[sourceMonth];
+  if (!src || Object.keys(src).length === 0) return showCustomAlert('来源月份没有预算设置');
+  if (data.budgets[targetMonth] && !(await showCustomConfirm(`目标月份 ${targetMonth} 已有预算设置，是否覆盖？`))) return;
+  data.budgets[targetMonth] = JSON.parse(JSON.stringify(src));
+  saveData(data);
+  renderBudgetList();
+  renderMonthBudget();
+  showCustomAlert(`已从 ${sourceMonth} 复制预算到 ${targetMonth}`);
+}
+
+function renderBudgetList() {
+  const container = document.getElementById('budget-list');
+  const months = Object.keys(data.budgets).sort().reverse();
+  const curMonth = currentMonthStr();
+
+  if (months.length === 0) {
+    container.innerHTML = '<div class="empty-state">暂无预算设置</div>';
+    document.getElementById('toggle-all-btn').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('toggle-all-btn').style.display = '';
+
+  let html = '';
+  let hasExpanded = false;
+
+  months.forEach((month, idx) => {
+    const days = daysInMonth(month);
+    const monthBudgets = data.budgets[month];
+    const isCurrent = month === curMonth;
+    const groupId = 'budget-group-' + idx;
+
+    // All months collapsed by default
+    const openClass = '';
+
+    const totalMonth = Object.values(monthBudgets).reduce((s, b) => s + b.amount, 0);
+
+    let itemsHtml = '';
+    for (const [cat, b] of Object.entries(monthBudgets)) {
+      const monthlyAmt = b.amount;
+      const splitByDay = b.splitByDay;
+      const dailyAmt = monthlyAmt / days;
+      const splitInfo = splitByDay
+        ? `<span style="color:var(--text-light);font-size:11px;">每日 ${formatMoney(dailyAmt)}</span>`
+        : `<span style="color:var(--text-light);font-size:11px;">不拆分</span>`;
+      itemsHtml += `
+        <div class="budget-bar" id="budget-bar-${cat.replace(/[^a-zA-Z\u4e00-\u9fa5]/g,'')}">
+          <span class="cat-name">${cat}</span>
+          <div class="budget-info">
+            <strong>${formatMoney(monthlyAmt)}</strong>
+            <span style="color:var(--text-light);font-size:11px;margin-left:6px;">${splitInfo}</span>
+          </div>
+          <button class="btn btn-sm btn-outline" onclick="editBudget('${month}','${cat}')">编辑</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteBudget('${month}','${cat}')">删除</button>
+        </div>`;
+    }
+
+    html += `
+      <div class="budget-month-group">
+        <div class="budget-month-header" onclick="toggleBudgetMonth('${groupId}', this)">
+          <span class="bm-arrow${openClass}" id="${groupId}-arrow">▶</span>
+          <span>${month}</span>
+          <span style="color:var(--text-light);font-weight:400;font-size:12px;">${days}天</span>
+          <span style="margin-left:auto;color:var(--text-light);font-weight:400;font-size:12px;">${Object.keys(monthBudgets).length}项 · ${formatMoney(totalMonth)}</span>
+          <button class="btn btn-sm btn-danger" style="margin-left:10px;padding:2px 8px;font-size:11px;" onclick="event.stopPropagation();deleteAllBudgetsInMonth('${month}')" title="删除该月全部预算">删除本月</button>
+        </div>
+        <div class="budget-month-body${openClass}" id="${groupId}">
+          ${itemsHtml}
+        </div>
+      </div>`;
+  });
+
+  container.innerHTML = html;
+  updateToggleAllBtn();
+}
+
+function toggleBudgetMonth(groupId, header) {
+  const body = document.getElementById(groupId);
+  const arrow = document.getElementById(groupId + '-arrow');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+  updateToggleAllBtn();
+}
+
+function toggleAllBudgets() {
+  const bodies = document.querySelectorAll('.budget-month-body');
+  const arrows = document.querySelectorAll('.bm-arrow');
+  const allOpen = Array.from(bodies).every(b => b.classList.contains('open'));
+  bodies.forEach(b => b.classList.toggle('open', !allOpen));
+  arrows.forEach(a => a.classList.toggle('open', !allOpen));
+  document.getElementById('toggle-all-btn').textContent = allOpen ? '展开全部' : '收起全部';
+}
+
+function updateToggleAllBtn() {
+  const bodies = document.querySelectorAll('.budget-month-body');
+  const btn = document.getElementById('toggle-all-btn');
+  if (!btn || bodies.length === 0) return;
+  const allOpen = Array.from(bodies).every(b => b.classList.contains('open'));
+  btn.textContent = allOpen ? '收起全部' : '展开全部';
+}
+
+function editBudget(month, cat) {
+  const b = data.budgets[month][cat];
+  const days = daysInMonth(month);
+  const dailyPreview = b.splitByDay ? formatMoney(b.amount / days) : formatMoney(b.amount) + ' (按月)';
+  const id = cat.replace(/[^a-zA-Z\u4e00-\u9fa5]/g,'');
+  const bar = document.getElementById('budget-bar-' + id);
+  if (!bar) return;
+  bar.style.flexWrap = 'wrap';
+  bar.style.gap = '8px';
+  bar.innerHTML = `
+    <span class="cat-name">${cat}</span>
+    <input type="number" id="edit-budget-amount" value="${b.amount}" placeholder="月预算" step="0.01" min="0" style="width:140px;padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px;" oninput="calcEditDaily('${month}')">
+    <select id="edit-budget-split" onchange="calcEditDaily('${month}')" style="padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:13px;">
+      <option value="yes" ${b.splitByDay?'selected':''}>按天拆分</option>
+      <option value="no" ${b.splitByDay?'':'selected'}>不拆分</option>
+    </select>
+    <span id="edit-daily-preview" style="color:var(--text-light);font-size:12px;">${dailyPreview}</span>
+    <button class="btn btn-sm btn-primary" onclick="saveBudgetEdit('${month}','${cat}')">保存</button>
+    <button class="btn btn-sm btn-outline" onclick="renderBudgetList()">取消</button>
+  `;
+}
+
+function calcEditDaily(month) {
+  const amount = parseFloat(document.getElementById('edit-budget-amount').value);
+  const split = document.getElementById('edit-budget-split').value === 'yes';
+  const preview = document.getElementById('edit-daily-preview');
+  if (!preview) return;
+  if (!amount || amount <= 0) { preview.textContent = '—'; return; }
+  if (split) {
+    preview.textContent = formatMoney(amount / daysInMonth(month));
+  } else {
+    preview.textContent = formatMoney(amount) + ' (按月)';
+  }
+}
+
+async function saveBudgetEdit(month, cat) {
+  const amount = parseFloat(document.getElementById('edit-budget-amount').value);
+  const splitByDay = document.getElementById('edit-budget-split').value === 'yes';
+  if (!amount || amount <= 0) return showCustomAlert('请输入有效预算金额');
+  if (!data.budgets[month]) data.budgets[month] = {};
+  data.budgets[month][cat] = { amount, splitByDay };
+  saveData(data);
+  renderBudgetList();
+  renderMonthBudget();
+}
+
+// ==================== TAB 3: 存款计划 ====================
+let editingPlanId = null;
+
+function openCreatePlanModal() {
+  editingPlanId = null;
+  document.getElementById('create-plan-modal').querySelector('h3').textContent = '创建存款计划';
+  document.getElementById('create-plan-modal').querySelector('.btn-primary').textContent = '创建存款计划';
+  document.getElementById('dp-saved-row').style.display = '';
+  document.getElementById('create-plan-modal').classList.add('show');
+}
+
+function toggleAutoDepositFields() {
+  const checked = document.getElementById('dp-auto-deposit').value === 'yes';
+  const amountInput = document.getElementById('dp-auto-amount');
+  amountInput.disabled = !checked;
+  if (checked && !amountInput.value) {
+    const monthly = document.getElementById('dp-monthly').value;
+    amountInput.placeholder = monthly ? formatMoney(parseFloat(monthly)) : '等于月期望';
+  }
+}
+
+function closeCreatePlanModal() {
+  editingPlanId = null;
+  document.getElementById('create-plan-modal').classList.remove('show');
+  document.getElementById('dp-name').value = '';
+  document.getElementById('dp-category').value = '';
+  document.getElementById('dp-path').value = '';
+  document.getElementById('dp-monthly').value = '';
+  document.getElementById('dp-saved').value = '';
+  document.getElementById('dp-auto-deposit').value = 'yes';
+  document.getElementById('dp-auto-amount').value = '';
+  document.getElementById('dp-auto-amount').disabled = false;
+}
+
+function editDepositPlan(id) {
+  const plan = data.depositPlans.find(p => p.id === id);
+  if (!plan) return;
+  editingPlanId = id;
+
+  document.getElementById('create-plan-modal').querySelector('h3').textContent = '编辑存款计划';
+  document.getElementById('create-plan-modal').querySelector('.btn-primary').textContent = '保存修改';
+
+  document.getElementById('dp-name').value = plan.name;
+  document.getElementById('dp-category').value = plan.category;
+  document.getElementById('dp-path').value = plan.path;
+  document.getElementById('dp-monthly').value = plan.monthlyGoal || '';
+  document.getElementById('dp-saved-row').style.display = 'none'; // hide initial balance when editing
+
+  const autoEnabled = plan.autoDeposit && plan.autoDeposit.enabled;
+  document.getElementById('dp-auto-deposit').value = autoEnabled ? 'yes' : 'no';
+  document.getElementById('dp-auto-amount').disabled = !autoEnabled;
+  document.getElementById('dp-auto-amount').value = autoEnabled ? (plan.autoDeposit.amount || '') : '';
+
+  document.getElementById('create-plan-modal').classList.add('show');
+}
+
+async function createDepositPlan() {
+  const name = document.getElementById('dp-name').value.trim();
+  const category = document.getElementById('dp-category').value.trim();
+  const path = document.getElementById('dp-path').value.trim();
+  const monthlyGoal = parseFloat(document.getElementById('dp-monthly').value);
+  const saved = parseFloat(document.getElementById('dp-saved').value) || 0;
+  const autoEnabled = document.getElementById('dp-auto-deposit').value === 'yes';
+  const autoAmount = autoEnabled ? (parseFloat(document.getElementById('dp-auto-amount').value) || monthlyGoal) : 0;
+
+  if (!name) return showCustomAlert('请输入存款名称');
+  if (!category) return showCustomAlert('请输入存款品类');
+  if (!path) return showCustomAlert('请输入存款路径');
+  if (!monthlyGoal || monthlyGoal <= 0) return showCustomAlert('请输入有效每月期望存款金额');
+  if (autoEnabled && (!autoAmount || autoAmount <= 0)) return showCustomAlert('请输入有效自动存入金额');
+
+  if (editingPlanId) {
+    // Edit existing plan
+    const plan = data.depositPlans.find(p => p.id === editingPlanId);
+    if (!plan) return;
+    plan.name = name;
+    plan.category = category;
+    plan.path = path;
+    plan.monthlyGoal = monthlyGoal;
+    if (!plan.autoDeposit) plan.autoDeposit = { enabled: false, amount: 0, lastAutoMonth: null };
+    plan.autoDeposit.enabled = autoEnabled;
+    plan.autoDeposit.amount = autoAmount;
+    if (!autoEnabled) plan.autoDeposit.lastAutoMonth = null;
+  } else {
+    // Create new plan
+    data.depositPlans.push({
+      id: uid(),
+      name,
+      category,
+      path,
+      monthlyGoal,
+      saved,
+      deposits: saved > 0 ? [{ id: uid(), amount: saved, date: todayStr(), source: '初始余额', note: '', type: 'deposit' }] : [],
+      autoDeposit: { enabled: autoEnabled, amount: autoAmount, lastAutoMonth: null }
+    });
+  }
+
+  saveData(data);
+  closeCreatePlanModal();
+  renderDepositPlans();
+}
+
+async function deleteDepositPlan(id) {
+  if (!(await showCustomConfirm('确定删除该存款计划？'))) return;
+  data.depositPlans = data.depositPlans.filter(p => p.id !== id);
+  saveData(data);
+  renderDepositPlans();
+}
+
+function openDepositModal(planId) {
+  document.getElementById('deposit-plan-id').value = planId;
+  document.getElementById('deposit-date').value = todayStr();
+  document.getElementById('deposit-modal').classList.add('show');
+}
+
+function closeDepositModal() {
+  document.getElementById('deposit-modal').classList.remove('show');
+  document.getElementById('deposit-amount').value = '';
+  document.getElementById('deposit-source').value = '';
+  document.getElementById('deposit-note').value = '';
+  document.getElementById('deposit-type').value = 'withdraw';
+  document.getElementById('deposit-amount-label').textContent = '取出金额 (¥)';
+}
+
+async function recordDeposit() {
+  const planId = document.getElementById('deposit-plan-id').value;
+  const amount = parseFloat(document.getElementById('deposit-amount').value);
+  const date = document.getElementById('deposit-date').value || todayStr();
+  const source = document.getElementById('deposit-source').value.trim();
+  const note = document.getElementById('deposit-note').value.trim();
+  const type = document.getElementById('deposit-type').value; // 'deposit' or 'withdraw'
+
+  if (!amount || amount <= 0) return showCustomAlert('请输入有效金额');
+  if (!source) return showCustomAlert('请输入来源/去向');
+
+  const plan = data.depositPlans.find(p => p.id === planId);
+  if (!plan) return;
+  plan.deposits.push({ id: uid(), amount, date, source, note, type });
+  plan.saved = plan.deposits.reduce((s, d) => s + (d.type === 'withdraw' ? -d.amount : d.amount), 0);
+  saveData(data);
+  closeDepositModal();
+  renderDepositPlans();
+}
+
+async function deleteDeposit(planId, depositId) {
+  if (!(await showCustomConfirm('确定删除该记录？'))) return;
+  const plan = data.depositPlans.find(p => p.id === planId);
+  if (!plan) return;
+  plan.deposits = plan.deposits.filter(d => d.id !== depositId);
+  plan.saved = plan.deposits.reduce((s, d) => s + (d.type === 'withdraw' ? -d.amount : d.amount), 0);
+  saveData(data);
+  renderDepositPlans();
+}
+
+// ==================== 存款计划拖拽排序 ====================
+let dragPlanIdx = -1;
+
+function handlePlanDragStart(e) {
+  dragPlanIdx = parseInt(e.currentTarget.dataset.planIdx);
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', '');
+}
+
+function handlePlanDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.draggable-plan').forEach(el => el.classList.remove('drag-over'));
+}
+
+function handlePlanDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const target = e.currentTarget;
+  const targetIdx = parseInt(target.dataset.planIdx);
+  if (targetIdx !== dragPlanIdx) {
+    document.querySelectorAll('.draggable-plan').forEach(el => el.classList.remove('drag-over'));
+    target.classList.add('drag-over');
+  }
+}
+
+function handlePlanDrop(e) {
+  e.preventDefault();
+  const target = e.currentTarget;
+  const targetIdx = parseInt(target.dataset.planIdx);
+  target.classList.remove('drag-over');
+  if (dragPlanIdx >= 0 && dragPlanIdx !== targetIdx) {
+    const [moved] = data.depositPlans.splice(dragPlanIdx, 1);
+    data.depositPlans.splice(targetIdx, 0, moved);
+    saveData(data);
+    renderDepositPlans();
+  }
+  dragPlanIdx = -1;
+}
+
+// ==================== 自动存入 ====================
+function processAutoDeposits() {
+  const curMonth = currentMonthStr();
+  let changed = false;
+  data.depositPlans.forEach(plan => {
+    // Migrate: ensure autoDeposit field exists
+    if (!plan.autoDeposit) plan.autoDeposit = { enabled: false, amount: 0, lastAutoMonth: null };
+    if (!plan.autoDeposit.enabled) return;
+    if (plan.autoDeposit.lastAutoMonth === curMonth) return; // already processed this month
+    
+    // Check if there's already an auto deposit for this month
+    const hasAutoThisMonth = (plan.deposits || []).some(d =>
+      d.type === 'deposit' && d.source === '自动存入' && d.date.startsWith(curMonth)
+    );
+    if (hasAutoThisMonth) {
+      plan.autoDeposit.lastAutoMonth = curMonth;
+      changed = true;
+      return;
+    }
+    
+    // Create auto deposit record
+    plan.deposits = plan.deposits || [];
+    plan.deposits.push({
+      id: uid(),
+      amount: plan.autoDeposit.amount,
+      date: curMonth + '-11',
+      source: '自动存入',
+      note: plan.name + ' 月度自动存入',
+      type: 'deposit',
+      confirmed: false
+    });
+    plan.saved = plan.deposits.reduce((s, d) => s + (d.type === 'withdraw' ? -d.amount : d.amount), 0);
+    plan.autoDeposit.lastAutoMonth = curMonth;
+    changed = true;
+  });
+  if (changed) saveData(data);
+}
+
+async function checkAutoDepositConfirmation() {
+  const today = new Date();
+  const curDay = today.getDate();
+  const curMonth = currentMonthStr();
+  
+  // Only prompt on the 12th or later
+  if (curDay < 12) return;
+  
+  let anyConfirmed = false;
+  for (const plan of data.depositPlans) {
+    if (!plan.autoDeposit || !plan.autoDeposit.enabled) continue;
+    for (const d of (plan.deposits || [])) {
+      if (d.type === 'deposit' && d.source === '自动存入' && d.date.startsWith(curMonth) && !d.confirmed) {
+        const confirmed = await showCustomConfirm(`计划：${plan.name}\n金额：${formatMoney(d.amount)}\n日期：${d.date}\n\n本月自动存入记录已生成。你确认这笔钱已实际存入了吗？`, '自动存入确认');
+        if (confirmed) {
+          d.confirmed = true;
+          anyConfirmed = true;
+        }
+      }
+    }
+  }
+  if (anyConfirmed) {
+    saveData(data);
+    renderDepositPlans();
+  }
+}
+
+async function toggleAutoDeposit(planId) {
+  const plan = data.depositPlans.find(p => p.id === planId);
+  if (!plan) return;
+  if (!plan.autoDeposit) plan.autoDeposit = { enabled: false, amount: 0, lastAutoMonth: null };
+  
+  if (plan.autoDeposit.enabled) {
+    plan.autoDeposit.enabled = false;
+    saveData(data);
+    renderDepositPlans();
+  } else {
+    // Enable: prompt for amount
+    const defaultAmt = plan.monthlyGoal || 0;
+    const amtStr = await showCustomPrompt('请输入每月自动存入金额：', '启用自动存入', defaultAmt.toFixed(2));
+    if (amtStr === null) return; // cancelled
+    const amt = parseFloat(amtStr);
+    if (!amt || amt <= 0) return showCustomAlert('请输入有效金额');
+    plan.autoDeposit.enabled = true;
+    plan.autoDeposit.amount = amt;
+    plan.autoDeposit.lastAutoMonth = null;
+    saveData(data);
+    // Immediately process for current month
+    processAutoDeposits();
+    renderDepositPlans();
+  }
+}
+
+async function confirmSingleDeposit(planId, depositId) {
+  const plan = data.depositPlans.find(p => p.id === planId);
+  if (!plan) return;
+  const deposit = (plan.deposits || []).find(d => d.id === depositId);
+  if (!deposit) return;
+  if (!(await showCustomConfirm(`确认「${plan.name}」的自动存入 ${formatMoney(deposit.amount)}（${deposit.date}）已实际完成？`, '确认存入'))) return;
+  deposit.confirmed = true;
+  saveData(data);
+  renderDepositPlans();
+}
+
+function renderDepositPlans() {
+  const container = document.getElementById('deposit-plans');
+  if (data.depositPlans.length === 0) {
+    container.innerHTML = `
+      <div class="card" style="text-align:center;">
+        <div class="empty-state" style="margin-bottom:12px;">暂无存款计划，请创建一个</div>
+        <button class="btn btn-primary" onclick="openCreatePlanModal()">+ 创建存款计划</button>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="display:flex;justify-content:flex-start;margin-bottom:16px;">
+      <button class="btn btn-primary" onclick="openCreatePlanModal()">+ 创建存款计划</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px;" id="deposit-plans-grid">
+    ` + data.depositPlans.map((plan, idx) => {
+    const saved = plan.saved || 0;
+    const pct = plan.monthlyGoal > 0 ? Math.min((saved / plan.monthlyGoal) * 100, 100) : 0;
+
+    let depositsHtml = '';
+    if (!plan.deposits || plan.deposits.length === 0) {
+      depositsHtml = '<div class="empty-state" style="padding:8px;font-size:12px;">暂无存取记录</div>';
+    } else {
+      const recent = plan.deposits.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+      depositsHtml = recent.map(d => {
+        const isWithdraw = d.type === 'withdraw';
+        const sign = isWithdraw ? '-' : '+';
+        const amountColor = isWithdraw ? 'var(--danger)' : 'var(--success)';
+        const isAutoDeposit = d.source === '自动存入';
+        const confirmBadge = isAutoDeposit && d.confirmed === false
+          ? '<span style="color:#e67e22;font-size:10px;margin-left:auto;cursor:pointer;" title="点击确认存入" onclick="event.stopPropagation();confirmSingleDeposit(\'' + plan.id + '\',\'' + d.id + '\')">⚠ 待确认</span>'
+          : (isAutoDeposit && d.confirmed === true ? '<span style="color:var(--success);font-size:10px;margin-left:auto;">✓ 已确认</span>' : '');
+        return `
+        <div class="usage-item" style="padding:5px 8px;font-size:11px;">
+          <span class="usage-amount" style="color:${amountColor};font-size:12px;">${sign}${formatMoney(d.amount)}</span>
+          <span>${d.date}</span>
+          <span style="color:var(--text-light);">${d.source}</span>
+          ${confirmBadge}
+          <span class="usage-del" onclick="deleteDeposit('${plan.id}','${d.id}')">&times;</span>
+        </div>`;
+      }).join('');
+      if (plan.deposits.length > 5) {
+        depositsHtml += `<div style="font-size:11px;color:var(--text-light);text-align:center;padding:4px;">... 共 ${plan.deposits.length} 条记录</div>`;
+      }
+    }
+
+    return `
+      <div class="card deposit-plan draggable-plan" draggable="true" data-plan-idx="${idx}" ondragstart="handlePlanDragStart(event)" ondragend="handlePlanDragEnd(event)" ondragover="handlePlanDragOver(event)" ondrop="handlePlanDrop(event)" style="padding:16px;margin-bottom:0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="color:var(--text-light);cursor:grab;font-size:12px;" title="拖动排序">⠿</span>
+            <h3 style="margin-bottom:0;font-size:14px;">${plan.name}</h3>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+          <button class="btn btn-sm btn-outline" style="padding:3px 10px;font-size:11px;" onclick="event.stopPropagation();editDepositPlan('${plan.id}')">编辑</button>
+          <button class="btn btn-sm btn-danger" style="padding:3px 10px;font-size:11px;" onclick="deleteDepositPlan('${plan.id}')">删除</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;color:var(--text-light);font-size:11px;margin-bottom:10px;">
+          <span>${plan.category}</span>
+          <span>${plan.path}</span>
+          <span>月期望 ${formatMoney(plan.monthlyGoal)}</span>
+          ${plan.autoDeposit && plan.autoDeposit.enabled ? `<span style="color:var(--success);font-weight:500;">🤖 自动存入 ${formatMoney(plan.autoDeposit.amount)}/月</span><span style="color:var(--text-light);cursor:pointer;font-size:11px;text-decoration:underline;" onclick="event.stopPropagation();toggleAutoDeposit('${plan.id}')" title="关闭自动存入">关闭</span>` : `<span class="btn btn-sm btn-outline" style="padding:2px 10px;font-size:11px;" onclick="event.stopPropagation();toggleAutoDeposit('${plan.id}')">启用自动存入</span>`}
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:2px;">
+            <span style="color:var(--success);font-weight:600;">已存 ${formatMoney(saved)}</span>
+            <span style="font-size:12px;color:var(--text-light);">${Math.round(pct)}%</span>
+          </div>
+          <div style="background:#e0e4ea;border-radius:4px;height:6px;">
+            <div style="background:var(--success);border-radius:4px;height:6px;width:${pct}%;transition:width 0.3s;"></div>
+          </div>
+        </div>
+
+        <button class="btn btn-sm btn-outline" style="margin-bottom:8px;" onclick="openDepositModal('${plan.id}')">记录存取</button>
+
+        <div class="deposit-usage">
+          <h4 style="font-size:12px;margin-bottom:6px;">存取记录</h4>
+          ${depositsHtml}
+        </div>
+      </div>`;
+  }).join('') + '</div>';
+}
+
+// ==================== 剪贴板同步 ====================
+function getExportData() {
+  const exportData = {
+    categories: data.categories,
+    summaryExcludeCategories: data.summaryExcludeCategories || [],
+    budgets: data.budgets,
+    expenses: data.expenses,
+    depositPlans: data.depositPlans,
+    exportedAt: new Date().toISOString()
+  };
+  return JSON.stringify(exportData, null, 2);
+}
+
+async function copyDataToClipboard() {
+  const dataStr = getExportData();
+  try {
+    await navigator.clipboard.writeText(dataStr);
+    showCustomAlert('数据已复制到剪贴板，可粘贴到微信发送');
+  } catch (e) {
+    const textarea = document.createElement('textarea');
+    textarea.value = dataStr;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    showCustomAlert('数据已复制到剪贴板，可粘贴到微信发送');
+  }
+}
+
+function importFromClipboard() {
+  document.getElementById('clipboard-import-text').value = '';
+  document.getElementById('clipboard-import-modal').classList.add('show');
+}
+
+function closeClipboardImport() {
+  document.getElementById('clipboard-import-modal').classList.remove('show');
+}
+
+async function confirmClipboardImport() {
+  const raw = document.getElementById('clipboard-import-text').value.trim();
+  if (!raw) return showCustomAlert('请先粘贴数据');
+  try {
+    const imported = JSON.parse(raw);
+    if (!imported.expenses || !imported.budgets || !imported.depositPlans) {
+      return showCustomAlert('数据格式不正确，请确认复制了完整的数据');
+    }
+    if (!(await showCustomConfirm('导入将覆盖当前全部数据（收支记录、预算、存款计划），是否继续？', '确认导入'))) return;
+
+    data.categories = imported.categories || data.categories;
+    data.summaryExcludeCategories = imported.summaryExcludeCategories || [];
+    data.budgets = imported.budgets || {};
+    data.expenses = imported.expenses || [];
+    data.depositPlans = imported.depositPlans || [];
+    saveData(data);
+    closeClipboardImport();
+    populateCategorySelects();
+    renderMonthBudget();
+    renderTodayRecords();
+    renderHistory();
+    renderBudgetList();
+    renderDepositPlans();
+    showCustomAlert('导入成功！');
+  } catch (e) {
+    showCustomAlert('数据解析失败，请确认粘贴的是有效的 JSON 数据');
+  }
+}
+
+// ==================== 数据导入/导出 ====================
+function exportToExcel() {
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: 支出记录
+  const expenseRows = data.expenses.map(e => ({
+    '日期': e.date,
+    '品类': e.category,
+    '金额': e.amount,
+    '备注': e.note || ''
+  }));
+  const ws1 = XLSX.utils.json_to_sheet(expenseRows.sort((a,b) => b['日期'].localeCompare(a['日期'])));
+  ws1['!cols'] = [{wch:12},{wch:10},{wch:12},{wch:30}];
+  XLSX.utils.book_append_sheet(wb, ws1, '支出记录');
+
+  // Sheet 2: 预算设置
+  const budgetRows = [];
+  for (const [month, cats] of Object.entries(data.budgets)) {
+    for (const [cat, b] of Object.entries(cats)) {
+      budgetRows.push({
+        '月份': month,
+        '品类': cat,
+        '月预算金额': b.amount,
+        '按天拆分': b.splitByDay ? '是' : '否'
+      });
+    }
+  }
+  budgetRows.sort((a,b) => b['月份'].localeCompare(a['月份']));
+  const ws2 = XLSX.utils.json_to_sheet(budgetRows);
+  ws2['!cols'] = [{wch:10},{wch:10},{wch:14},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, ws2, '预算设置');
+
+  // Sheet 3: 存款计划汇总
+  const planRows = data.depositPlans.map(p => ({
+    '名称': p.name,
+    '品类': p.category,
+    '路径': p.path,
+    '每月期望存款': p.monthlyGoal,
+    '已存入净额': p.saved
+  }));
+  const ws3 = XLSX.utils.json_to_sheet(planRows);
+  ws3['!cols'] = [{wch:16},{wch:12},{wch:16},{wch:16},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, ws3, '存款计划汇总');
+
+  // Sheet 4: 存取记录
+  const depositRows = [];
+  data.depositPlans.forEach(p => {
+    (p.deposits || []).forEach(d => {
+      depositRows.push({
+        '计划名称': p.name,
+        '类型': (d.type === 'withdraw') ? '取出' : '存入',
+        '金额': d.amount,
+        '日期': d.date,
+        '来源/去向': d.source || '',
+        '备注': d.note || ''
+      });
+    });
+  });
+  depositRows.sort((a,b) => b['日期'].localeCompare(a['日期']));
+  const ws4 = XLSX.utils.json_to_sheet(depositRows);
+  ws4['!cols'] = [{wch:16},{wch:8},{wch:12},{wch:12},{wch:16},{wch:30}];
+  XLSX.utils.book_append_sheet(wb, ws4, '存取记录');
+
+  // Sheet 5: 品类列表
+  const exclCatsExport = data.summaryExcludeCategories || [];
+  const catRows = data.categories.map(c => ({'品类名称': c, '排除统计': exclCatsExport.includes(c) ? '是' : '否'}));
+  const ws5 = XLSX.utils.json_to_sheet(catRows);
+  ws5['!cols'] = [{wch:14},{wch:10}];
+  XLSX.utils.book_append_sheet(wb, ws5, '品类列表');
+
+  XLSX.writeFile(wb, `FinTrack_${todayStr()}.xlsx`);
+}
+
+function handleFileImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      const wb = XLSX.read(e.target.result, {type: 'array'});
+      await importFromWorkbook(wb);
+    } catch(err) {
+      showCustomAlert('文件读取失败，请确认是有效的 Excel 文件。');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  event.target.value = ''; // reset input
+}
+
+async function importFromWorkbook(wb) {
+  const stats = {expenses:0, budgets:0, plans:0, deposits:0, categories:0};
+
+  // Sheet: 支出记录
+  if (wb.SheetNames.includes('支出记录')) {
+    const sheet = XLSX.utils.sheet_to_json(wb.Sheets['支出记录']);
+    sheet.forEach(row => {
+      if (row['日期'] && row['品类'] && row['金额'] != null) {
+        data.expenses.push({
+          id: uid(),
+          amount: parseFloat(row['金额']) || 0,
+          category: String(row['品类']),
+          date: String(row['日期']),
+          note: row['备注'] ? String(row['备注']) : '',
+          createdAt: new Date().toISOString()
+        });
+        stats.expenses++;
+      }
+    });
+  }
+
+  // Sheet: 预算设置
+  if (wb.SheetNames.includes('预算设置')) {
+    const sheet = XLSX.utils.sheet_to_json(wb.Sheets['预算设置']);
+    sheet.forEach(row => {
+      if (row['月份'] && row['品类'] && row['月预算金额'] != null) {
+        const month = String(row['月份']);
+        const cat = String(row['品类']);
+        if (!data.budgets[month]) data.budgets[month] = {};
+        data.budgets[month][cat] = {
+          amount: parseFloat(row['月预算金额']) || 0,
+          splitByDay: row['按天拆分'] === '是'
+        };
+        stats.budgets++;
+      }
+    });
+  }
+
+  // Sheet: 存款计划汇总
+  if (wb.SheetNames.includes('存款计划汇总')) {
+    const sheet = XLSX.utils.sheet_to_json(wb.Sheets['存款计划汇总']);
+    sheet.forEach(row => {
+      if (row['名称'] && row['每月期望存款'] != null) {
+        data.depositPlans.push({
+          id: uid(),
+          name: String(row['名称']),
+          category: row['品类'] ? String(row['品类']) : '',
+          path: row['路径'] ? String(row['路径']) : '',
+          monthlyGoal: parseFloat(row['每月期望存款']) || 0,
+          saved: parseFloat(row['已存入净额']) || 0,
+          deposits: []
+        });
+        stats.plans++;
+      }
+    });
+  }
+
+  // Sheet: 存取记录
+  if (wb.SheetNames.includes('存取记录')) {
+    const sheet = XLSX.utils.sheet_to_json(wb.Sheets['存取记录']);
+    sheet.forEach(row => {
+      if (row['计划名称'] && row['金额'] != null) {
+        const planName = String(row['计划名称']);
+        const plan = data.depositPlans.find(p => p.name === planName);
+        if (plan) {
+          plan.deposits.push({
+            id: uid(),
+            amount: parseFloat(row['金额']) || 0,
+            date: row['日期'] ? String(row['日期']) : todayStr(),
+            source: row['来源/去向'] ? String(row['来源/去向']) : '',
+            note: row['备注'] ? String(row['备注']) : '',
+            type: row['类型'] === '取出' ? 'withdraw' : 'deposit'
+          });
+          stats.deposits++;
+        }
+      }
+    });
+    // Recalculate saved for all plans
+    data.depositPlans.forEach(p => {
+      p.saved = (p.deposits || []).reduce((s, d) => s + (d.type === 'withdraw' ? -d.amount : d.amount), 0);
+    });
+  }
+
+  // Sheet: 品类列表
+  if (wb.SheetNames.includes('品类列表')) {
+    const sheet = XLSX.utils.sheet_to_json(wb.Sheets['品类列表']);
+    sheet.forEach(row => {
+      if (row['品类名称']) {
+        const name = String(row['品类名称']);
+        if (!data.categories.includes(name)) {
+          data.categories.push(name);
+          stats.categories++;
+        }
+        if (row['排除统计'] === '是') {
+          if (!data.summaryExcludeCategories) data.summaryExcludeCategories = [];
+          if (!data.summaryExcludeCategories.includes(name)) {
+            data.summaryExcludeCategories.push(name);
+          }
+        }
+      }
+    });
+  }
+
+  saveData(data);
+  populateCategorySelects();
+  renderMonthBudget();
+  renderTodayRecords();
+  renderHistory();
+  renderBudgetList();
+  renderDepositPlans();
+
+  const total = stats.expenses + stats.budgets + stats.plans + stats.deposits + stats.categories;
+  if (total === 0) {
+    showCustomAlert('未识别到有效数据，请确认 Excel 表格格式正确。');
+  } else {
+    let msg = `导入成功！\n支出记录: ${stats.expenses} 条\n预算设置: ${stats.budgets} 项\n存款计划: ${stats.plans} 个\n存取记录: ${stats.deposits} 条`;
+    if (stats.categories > 0) msg += `\n品类: ${stats.categories} 个`;
+    msg += '\n\n注意：导入会追加到现有数据，不会覆盖。';
+    showCustomAlert(msg);
+  }
+}
+
+// ==================== 初始化 ====================
+function init() {
+  document.getElementById('exp-date').value = todayStr();
+  document.getElementById('budget-month').value = currentMonthStr();
+  document.getElementById('history-date').value = todayStr();
+
+  const curMonth = currentMonthStr();
+  const prev = prevMonthStr(curMonth);
+  document.getElementById('copy-source-month').value = prev;
+  document.getElementById('copy-target-month').value = curMonth;
+
+  populateCategorySelects();
+  processAutoDeposits();
+  checkAutoDepositConfirmation();
+  renderMonthBudget();
+  renderTodayRecords();
+  renderHistory();
+  renderBudgetList();
+  renderDepositPlans();
+}
+
+// Modal click outside to close
+document.getElementById('deposit-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeDepositModal();
+});
+document.getElementById('create-plan-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeCreatePlanModal();
+});
+document.getElementById('clipboard-import-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeClipboardImport();
+});
+
+// Toggle deposit amount label based on type
+document.getElementById('deposit-type').addEventListener('change', function() {
+  const label = document.getElementById('deposit-amount-label');
+  label.textContent = this.value === 'withdraw' ? '取出金额 (¥)' : '存入金额 (¥)';
+});
+
+// Custom dialog: click overlay to close (cancel)
+document.getElementById('custom-dialog-overlay').addEventListener('click', function(e) {
+  if (e.target === this && _customDialogOnCancel) {
+    _customDialogOnCancel();
+  }
+});
+
+// Sync budget card height on resize
+window.addEventListener('resize', syncBudgetCardHeight);
+
+init();
+</script>
+</body>
+</html>
