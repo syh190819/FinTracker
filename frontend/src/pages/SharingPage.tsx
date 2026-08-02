@@ -204,6 +204,7 @@ export default function SharingPage() {
 
   return (
     <div style={containerStyle}>
+      <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 20 }}>共享</h1>
       <div style={rowStyle}>
         {/* Left: 邀请/接受入口 */}
         <div style={cardStyle}>

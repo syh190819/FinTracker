@@ -173,6 +173,7 @@ const BudgetPage: React.FC = () => {
   return (
     <div>
       {dialog}
+      <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 16 }}>预算</h1>
       {/* 预算操作区 */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setBudgetModalOpen(true)}>

@@ -153,6 +153,7 @@ const ExpensePage: React.FC = () => {
 
   return (
     <div>
+      <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, marginBottom: 16 }}>记账</h1>
       <div className="two-col">
         {/* Left: budget overview */}
         <div>
