@@ -54,6 +54,19 @@ npm run dev        # http://localhost:3000
 - 后端健康检查：http://localhost:8080/api/health
 - 前端通过 Vite 代理转发 `/api` 请求到后端，跨域无需额外配置
 
+## 手机访问（同一 Wi-Fi）
+
+前端已配置 `host: true`，并放行了 Windows 防火墙的 3000/8080 端口：
+
+1. 确认手机和电脑连的是**同一个 Wi-Fi**
+2. 手机浏览器打开 `http://<电脑局域网IP>:3000`（本机当前为 `http://192.168.1.16:3000`）
+3. 电脑的局域网 IP 可用 `ipconfig` 查看（IPv4 地址）
+
+注意：
+- 手机访问的是电脑的局域网 IP，不能是 localhost
+- 若打不开，检查路由器是否开启了"AP 隔离"（访客网络通常会隔离设备互访）
+- 如需**任何网络（流量/异地）**都能访问，需要公网隧道（如 Cloudflare Tunnel / ngrok），见部署文档
+
 ## 注意事项
 
 - `backend/.env` 包含本地数据库连接与 JWT 密钥，已加入 `.gitignore`，不会被提交
