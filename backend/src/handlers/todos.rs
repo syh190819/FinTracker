@@ -320,6 +320,25 @@ pub async fn update(
     .fetch_one(&db)
     .await
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    // 勾选完成时，级联完成全部子孙待办（取消勾选不影响子级）
+    if done {
+        let _ = sqlx::query(
+            "WITH RECURSIVE tree AS (
+                SELECT id FROM todos WHERE parent_id = $1 AND user_id = $2 AND deleted_at IS NULL
+                UNION
+                SELECT t.id FROM todos t JOIN tree ON t.parent_id = tree.id
+                WHERE t.user_id = $2 AND t.deleted_at IS NULL
+             )
+             UPDATE todos SET done = true, updated_at = NOW()
+             WHERE id IN (SELECT id FROM tree)",
+        )
+        .bind(id)
+        .bind(user_id)
+        .execute(&db)
+        .await;
+    }
+
     Ok(Json(todo))
 }
 

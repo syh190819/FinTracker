@@ -191,7 +191,8 @@ export default function TodosPage() {
   const handleToggle = async (todo: Todo, done: boolean) => {
     try {
       await todoApi.update(todo.id, { done });
-      setTodos((prev) => prev.map((t) => (t.id === todo.id ? { ...t, done } : t)));
+      // 完成时后端会级联完成子级，重新加载以同步状态
+      load();
     } catch {
       message.error('操作失败');
     }
