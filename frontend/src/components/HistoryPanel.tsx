@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { formatMoney } from '../utils/helpers';
+import { useEffect, useState } from 'react';
+import { daysInMonth, formatMoney } from '../utils/helpers';
 import type { Expense } from '../types/api';
 import type { ShowDialogFn } from './CustomDialog';
 
@@ -7,14 +7,26 @@ interface Props {
   expenses: Expense[];
   onDelete: (id: number) => void;
   showDialog: ShowDialogFn;
+  viewMonth: string;
 }
 
-const HistoryPanel: React.FC<Props> = ({ expenses, onDelete, showDialog }) => {
+const HistoryPanel: React.FC<Props> = ({ expenses, onDelete, showDialog, viewMonth }) => {
   const [isOpen, setIsOpen] = useState(true);
-  const [date, setDate] = useState(() => {
+  const [date, setDate] = useState('');
+
+  // 跟随预算管理的月份：当月内取今天，否则取当月 1 号
+  useEffect(() => {
     const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  });
+    const curMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    if (curMonth === viewMonth) {
+      setDate(`${curMonth}-${String(d.getDate()).padStart(2, '0')}`);
+    } else {
+      setDate(`${viewMonth}-01`);
+    }
+  }, [viewMonth]);
+
+  const monthStart = `${viewMonth}-01`;
+  const monthEnd = `${viewMonth}-${String(daysInMonth(viewMonth)).padStart(2, '0')}`;
 
   const records = expenses
     .filter(e => e.date === date)
@@ -40,12 +52,17 @@ const HistoryPanel: React.FC<Props> = ({ expenses, onDelete, showDialog }) => {
       {isOpen && (
         <div style={{ marginTop: 14 }}>
           <div style={{ marginBottom: 12 }}>
-            <input
-              type="date"
-              value={date}
-              onChange={e => setDate(e.target.value)}
-              style={{ padding: 'calc(8px * var(--S)) calc(12px * var(--S))', border: '1px solid var(--border)', borderRadius: 4, fontSize: 13 }}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 13, color: 'var(--text-light)' }}>{viewMonth}</span>
+              <input
+                type="date"
+                value={date}
+                min={monthStart}
+                max={monthEnd}
+                onChange={e => setDate(e.target.value)}
+                style={{ padding: 'calc(8px * var(--S)) calc(12px * var(--S))', border: '1px solid var(--border)', borderRadius: 4, fontSize: 13 }}
+              />
+            </div>
           </div>
           <div className="record-list">
             {records.length === 0 ? (

@@ -42,7 +42,16 @@ const BudgetOverviewCard: React.FC<Props> = ({ expenses, budgets, categories, pl
     });
 
   const exclCats = categories.filter(c => c.excluded).map(c => c.name);
-  const planBudgets = plans.filter(p => p.plan_types.includes('budget') && p.expense_limit > 0);
+  // 预算计划按月份范围展示：创建月 → 截止月（含）；无截止的长期展示
+  const planBudgets = plans
+    .filter(p => p.plan_types.includes('budget') && p.expense_limit > 0)
+    .filter(p => {
+      const start = (p.created_at || '').slice(0, 7);
+      const end = p.deadline ? p.deadline.slice(0, 7) : null;
+      if (!start) return false;
+      if (end) return start <= viewMonth && viewMonth <= end;
+      return start <= viewMonth;
+    });
 
   // 计划关联支出（按 plan_id 统计）
   const monthSpentByPlan: Record<number, number> = {};

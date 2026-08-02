@@ -188,6 +188,7 @@ const ExpensePage: React.FC = () => {
             expenses={expenses}
             onDelete={handleDeleteExpense}
             showDialog={showDialog}
+            viewMonth={viewMonth}
           />
         </div>
       </div>
