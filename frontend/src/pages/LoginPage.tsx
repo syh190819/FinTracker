@@ -41,7 +41,7 @@ export default function LoginPage() {
     >
       <Card style={{ width: 380 }}>
         <Title level={3} style={{ textAlign: 'center', marginBottom: 24 }}>
-          FinTracker
+          MyShy
         </Title>
         <Form layout="vertical" onFinish={onFinish} autoComplete="off">
           <Form.Item name="username" rules={[{ required: true, message: '请输入用户名' }]}>

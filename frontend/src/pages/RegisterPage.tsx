@@ -41,7 +41,7 @@ export default function RegisterPage() {
     >
       <Card style={{ width: 380 }}>
         <Title level={3} style={{ textAlign: 'center', marginBottom: 24 }}>
-          注册 FinTracker
+           注册 MyShy
         </Title>
         <Form layout="vertical" onFinish={onFinish} autoComplete="off">
           <Form.Item

@@ -233,7 +233,7 @@ export default function MainLayout() {
             overflow: 'hidden',
           }}
         >
-          {collapsed ? 'F' : 'FinTracker'}
+          {collapsed ? 'MS' : 'MyShy'}
         </div>
         <div style={{ flex: 1, padding: 8, display: 'flex', flexDirection: 'column', gap: 4, overflowY: 'auto' }}>
           {NAV_TABS.map((tab) => (
