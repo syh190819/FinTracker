@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
 import LoginPage from './pages/LoginPage';
@@ -8,6 +8,9 @@ import BudgetPage from './pages/BudgetPage';
 import DepositPage from './pages/DepositPage';
 import StatisticsPage from './pages/StatisticsPage';
 import SharingPage from './pages/SharingPage';
+import WorkbenchPage from './pages/WorkbenchPage';
+import TodosPage from './pages/TodosPage';
+import PlansPage from './pages/PlansPage';
 
 function App() {
   return (
@@ -22,12 +25,14 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Navigate to="/expenses" replace />} />
+        <Route index element={<WorkbenchPage />} />
         <Route path="expenses" element={<ExpensePage />} />
         <Route path="budgets" element={<BudgetPage />} />
         <Route path="deposits" element={<DepositPage />} />
         <Route path="statistics" element={<StatisticsPage />} />
         <Route path="sharing" element={<SharingPage />} />
+        <Route path="todos" element={<TodosPage />} />
+        <Route path="plans" element={<PlansPage />} />
       </Route>
     </Routes>
   );

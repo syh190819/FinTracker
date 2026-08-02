@@ -1,31 +1,57 @@
 import { useCallback, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Button, Modal, message, Dropdown } from 'antd';
-import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
+import { Button, Drawer, Dropdown, Grid, Modal, message } from 'antd';
+import {
+  UserOutlined,
+  LogoutOutlined,
+  MenuOutlined,
+  HomeOutlined,
+  WalletOutlined,
+  AccountBookOutlined,
+  BankOutlined,
+  BarChartOutlined,
+  TeamOutlined,
+  CheckSquareOutlined,
+  FlagOutlined,
+} from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { todayStr } from '../utils/helpers';
 import * as XLSX from 'xlsx';
 import { importExportApi } from '../services/importExportApi';
 
 const NAV_TABS = [
-  { path: '/expenses', label: '记账' },
-  { path: '/budgets', label: '预算' },
-  { path: '/deposits', label: '存款' },
-  { path: '/statistics', label: '统计' },
-  { path: '/sharing', label: '共享' },
+  { path: '/', label: '工作台', icon: <HomeOutlined /> },
+  { path: '/expenses', label: '记账', icon: <WalletOutlined /> },
+  { path: '/budgets', label: '预算', icon: <AccountBookOutlined /> },
+  { path: '/deposits', label: '存款', icon: <BankOutlined /> },
+  { path: '/statistics', label: '统计', icon: <BarChartOutlined /> },
+  { path: '/sharing', label: '共享', icon: <TeamOutlined /> },
+  { path: '/todos', label: '待办', icon: <CheckSquareOutlined /> },
+  { path: '/plans', label: '计划', icon: <FlagOutlined /> },
 ];
 
 export default function MainLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pasteOpen, setPasteOpen] = useState(false);
   const [pasteText, setPasteText] = useState('');
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/login', { replace: true });
+  };
+
+  const isActive = (path: string) =>
+    path === '/' ? location.pathname === '/' : location.pathname === path;
+
+  const goTo = (path: string) => {
+    navigate(path);
+    setDrawerOpen(false);
   };
 
   // ── 导出全部数据 ──
@@ -92,9 +118,6 @@ export default function MainLayout() {
     reader.onload = async (evt) => {
       try {
         const wb = XLSX.read(evt.target?.result, { type: 'array' });
-        const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-        // 简单的导入：由后端处理结构化数据
-        // 这里用 base approach：读取整个文件后直接调用 import API
         const data: any = {};
         const sheets = wb.SheetNames;
         if (sheets.includes('支出记录')) {
@@ -121,21 +144,102 @@ export default function MainLayout() {
     { key: 'logout', icon: <LogoutOutlined />, label: '退出登录', onClick: handleLogout },
   ];
 
+  const toolButtons = (
+    <>
+      <Button size="small" type="text" onClick={handleCopy}>复制</Button>
+      <Button size="small" type="text" onClick={() => { setPasteText(''); setPasteOpen(true); }}>粘贴导入</Button>
+      <Button size="small" type="text" onClick={() => fileInputRef.current?.click()}>导入Excel</Button>
+      <Button size="small" type="text" onClick={handleExportExcel}>导出Excel</Button>
+    </>
+  );
+
+  const navList = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {NAV_TABS.map((tab) => (
+        <Button
+          key={tab.path}
+          type={isActive(tab.path) ? 'primary' : 'text'}
+          icon={tab.icon}
+          block
+          onClick={() => goTo(tab.path)}
+          style={{
+            justifyContent: 'flex-start',
+            height: 44,
+            borderRadius: 6,
+            fontWeight: isActive(tab.path) ? 600 : 400,
+          }}
+        >
+          {tab.label}
+        </Button>
+      ))}
+    </div>
+  );
+
+  const drawerTools = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, borderTop: '1px solid #f0f0f0', paddingTop: 12 }}>
+      {['复制数据', '粘贴导入', '导入Excel', '导出Excel'].map((label, i) => (
+        <Button
+          key={label}
+          type="text"
+          block
+          style={{ justifyContent: 'flex-start' }}
+          onClick={() => {
+            setDrawerOpen(false);
+            if (i === 0) handleCopy();
+            else if (i === 1) { setPasteText(''); setPasteOpen(true); }
+            else if (i === 2) fileInputRef.current?.click();
+            else handleExportExcel();
+          }}
+        >
+          {label}
+        </Button>
+      ))}
+      <Button type="text" danger block style={{ justifyContent: 'flex-start' }} onClick={handleLogout}>
+        退出登录
+      </Button>
+    </div>
+  );
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* 顶部导航 */}
-      <div style={{
-        display: 'flex', alignItems: 'center', padding: '0 16px',
-        borderBottom: '1px solid #f0f0f0', background: '#fff', gap: 4, flexShrink: 0,
-      }}>
-        {/* 系统标题 */}
-        <span style={{ fontWeight: 700, fontSize: 16, color: '#1a1a2e', marginRight: 16, userSelect: 'none' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: isMobile ? '0 8px' : '0 16px',
+          borderBottom: '1px solid #f0f0f0',
+          background: '#fff',
+          gap: isMobile ? 8 : 4,
+          flexShrink: 0,
+          minHeight: 46,
+        }}
+      >
+        {isMobile && (
+          <Button
+            type="text"
+            icon={<MenuOutlined />}
+            onClick={() => setDrawerOpen(true)}
+            aria-label="打开导航"
+          />
+        )}
+        <span
+          style={{
+            fontWeight: 700,
+            fontSize: 16,
+            color: '#1a1a2e',
+            marginRight: isMobile ? 4 : 16,
+            userSelect: 'none',
+            whiteSpace: 'nowrap',
+          }}
+        >
           FinTracker
         </span>
-        {NAV_TABS.map(tab => (
+
+        {!isMobile && NAV_TABS.map((tab) => (
           <Button
             key={tab.path}
-            type={location.pathname === tab.path ? 'primary' : 'text'}
+            type={isActive(tab.path) ? 'primary' : 'text'}
             onClick={() => navigate(tab.path)}
             style={{ borderRadius: 0, height: 46 }}
           >
@@ -145,25 +249,34 @@ export default function MainLayout() {
 
         <div style={{ flex: 1 }} />
 
-        {/* 工具按钮 */}
-        <Button size="small" type="text" onClick={handleCopy}>复制</Button>
-        <Button size="small" type="text" onClick={() => { setPasteText(''); setPasteOpen(true); }}>粘贴导入</Button>
-        <Button size="small" type="text" onClick={() => fileInputRef.current?.click()}>导入Excel</Button>
-        <Button size="small" type="text" onClick={handleExportExcel}>导出Excel</Button>
-        <input ref={fileInputRef} type="file" accept=".xlsx,.xls" style={{ display: 'none' }} onChange={handleFileImport} />
+        {!isMobile && toolButtons}
 
-        {/* 用户信息 */}
         <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-          <Button type="text" icon={<UserOutlined />} style={{ marginLeft: 8 }}>
-            {user?.username}
+          <Button type="text" icon={<UserOutlined />} style={{ marginLeft: isMobile ? 0 : 8 }}>
+            {!isMobile && user?.username}
           </Button>
         </Dropdown>
+
+        <input ref={fileInputRef} type="file" accept=".xlsx,.xls" style={{ display: 'none' }} onChange={handleFileImport} />
       </div>
 
       {/* 页面内容 */}
-      <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+      <div style={{ flex: 1, overflow: 'auto', padding: isMobile ? 8 : 16 }}>
         <Outlet />
       </div>
+
+      {/* 移动端左侧抽屉导航 */}
+      <Drawer
+        title="FinTracker"
+        placement="left"
+        width={264}
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        styles={{ body: { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 12 } }}
+      >
+        {navList}
+        {drawerTools}
+      </Drawer>
 
       {/* 粘贴导入弹窗 */}
       <Modal
