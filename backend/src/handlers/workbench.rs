@@ -2,8 +2,8 @@ use axum::{extract::State, http::StatusCode, Json};
 use serde::Serialize;
 use sqlx::PgPool;
 
-use crate::handlers::plans::{Plan, PLAN_COLUMNS};
-use crate::handlers::todos::{Todo, TODO_COLUMNS};
+use crate::handlers::plans::{Plan, PLAN_SELECT_COLUMNS};
+use crate::handlers::todos::{ensure_monthly_deposit_todos, Todo, TODO_COLUMNS};
 
 #[derive(Debug, Serialize)]
 pub struct WorkbenchSummary {
@@ -94,6 +94,8 @@ pub async fn summary(
     .await
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
+    ensure_monthly_deposit_todos(&db, user_id).await?;
+
     let recent_todos = sqlx::query_as::<_, Todo>(&format!(
         "SELECT {} FROM todos t LEFT JOIN plans p ON p.id = t.plan_id AND p.deleted_at IS NULL \
          WHERE t.user_id = $1 AND t.deleted_at IS NULL AND t.done = false \
@@ -106,10 +108,17 @@ pub async fn summary(
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     let active_plans = sqlx::query_as::<_, Plan>(&format!(
-        "SELECT {} FROM plans p LEFT JOIN todos t ON t.plan_id = p.id \
+        "WITH RECURSIVE all_todos AS ( \
+            SELECT id, plan_id, done FROM todos \
+            WHERE user_id = $1 AND deleted_at IS NULL AND plan_id IS NOT NULL \
+            UNION \
+            SELECT t.id, a.plan_id, t.done \
+            FROM todos t JOIN all_todos a ON t.parent_id = a.id \
+            WHERE t.user_id = $1 AND t.deleted_at IS NULL \
+         ) SELECT {} FROM plans p LEFT JOIN all_todos ad ON ad.plan_id = p.id \
          WHERE p.user_id = $1 AND p.deleted_at IS NULL AND p.archived = false \
          GROUP BY p.id ORDER BY p.deadline ASC NULLS LAST, p.created_at DESC LIMIT 5",
-        PLAN_COLUMNS
+        PLAN_SELECT_COLUMNS
     ))
     .bind(user_id)
     .fetch_all(&db)
