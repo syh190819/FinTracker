@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { message } from 'antd';
+import { Button, Modal, message } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import BudgetOverviewCard from '../components/BudgetOverviewCard';
 import ExpenseForm from '../components/ExpenseForm';
 import HistoryPanel from '../components/HistoryPanel';
@@ -35,6 +36,8 @@ const ExpensePage: React.FC = () => {
     const t = new URLSearchParams(window.location.search).get('type');
     return t === 'income' || t === 'expense' ? t : undefined;
   });
+  const [formOpen, setFormOpen] = useState(false);
+  const [formType, setFormType] = useState<'expense' | 'income'>('expense');
 
   const fetchExpenses = useCallback(async () => {
     try {
@@ -78,6 +81,14 @@ const ExpensePage: React.FC = () => {
     fetchPlans();
   }, [fetchExpenses, fetchCategories, fetchPlans]);
 
+  // 从计划页/快捷入口跳转时自动打开记账弹窗
+  useEffect(() => {
+    if (initialPlanId !== undefined || initialNote !== undefined || initialType !== undefined) {
+      setFormType(initialType || 'expense');
+      setFormOpen(true);
+    }
+  }, [initialPlanId, initialNote, initialType]);
+
   // Reload budgets when viewMonth changes
   useEffect(() => {
     fetchBudgets(viewMonth);
@@ -105,6 +116,7 @@ const ExpensePage: React.FC = () => {
         setInitialNote(undefined);
         setInitialType(undefined);
       }
+      setFormOpen(false);
     } catch {
       message.error('记录失败');
     }
@@ -154,19 +166,23 @@ const ExpensePage: React.FC = () => {
           />
         </div>
 
-        {/* Right: expense form + history */}
+        {/* Right: 记一笔按钮 + history */}
         <div ref={rightRef} style={{ display: 'flex', flexDirection: 'column' }}>
-          <ExpenseForm
-            categoryNames={categoryNames}
-            plans={plans}
-            initialPlanId={initialPlanId}
-            initialNote={initialNote}
-            initialType={initialType}
-            onAdd={handleAddExpense}
-            todayTotal={todayTotal}
-            todayCount={todayCount}
-            showDialog={showDialog}
-          />
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => { setFormType('expense'); setFormOpen(true); }}
+            >
+              记支出
+            </Button>
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() => { setFormType('income'); setFormOpen(true); }}
+            >
+              记收入
+            </Button>
+          </div>
           <HistoryPanel
             expenses={expenses}
             onDelete={handleDeleteExpense}
@@ -174,6 +190,29 @@ const ExpensePage: React.FC = () => {
           />
         </div>
       </div>
+
+      {/* 记账弹窗 */}
+      <Modal
+        title={formType === 'income' ? '记收入' : '记支出'}
+        open={formOpen}
+        onCancel={() => setFormOpen(false)}
+        footer={null}
+        destroyOnHidden
+        width={520}
+      >
+        <ExpenseForm
+          compact
+          categoryNames={categoryNames}
+          plans={plans}
+          initialPlanId={initialPlanId}
+          initialNote={initialNote}
+          initialType={formType}
+          onAdd={handleAddExpense}
+          todayTotal={todayTotal}
+          todayCount={todayCount}
+          showDialog={showDialog}
+        />
+      </Modal>
       {dialog}
     </div>
   );

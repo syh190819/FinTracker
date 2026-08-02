@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { message, Modal, Checkbox, Button, Input } from 'antd';
-import { CopyOutlined } from '@ant-design/icons';
+import { CopyOutlined, PlusOutlined, UserAddOutlined } from '@ant-design/icons';
 import { sharingApi } from '../services/sharingApi';
 import type { SharingWithUsername } from '../types/api';
 
@@ -10,6 +10,8 @@ export default function SharingPage() {
   const [acceptCode, setAcceptCode] = useState('');
   const [generating, setGenerating] = useState(false);
   const [accepting, setAccepting] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [acceptModalOpen, setAcceptModalOpen] = useState(false);
 
   useEffect(() => {
     loadRelationships();
@@ -29,6 +31,7 @@ export default function SharingPage() {
     try {
       const res = await sharingApi.invite();
       setInviteCode(res.invite_code);
+      setInviteModalOpen(true);
     } catch {
       message.error('生成邀请码失败');
     } finally {
@@ -57,6 +60,7 @@ export default function SharingPage() {
       message.success('已成功加入共享');
       setAcceptCode('');
       setInviteCode('');
+      setAcceptModalOpen(false);
       loadRelationships();
     } catch {
       message.error('邀请码无效或已过期');
@@ -138,13 +142,6 @@ export default function SharingPage() {
     marginBottom: 24,
   };
 
-  const labelStyle: React.CSSProperties = {
-    fontSize: 14,
-    fontWeight: 500,
-    marginBottom: 8,
-    color: '#333',
-  };
-
   const inviteCodeDisplayStyle: React.CSSProperties = {
     fontSize: 28,
     fontWeight: 700,
@@ -208,49 +205,24 @@ export default function SharingPage() {
   return (
     <div style={containerStyle}>
       <div style={rowStyle}>
-        {/* Left: Invite Management */}
+        {/* Left: 邀请/接受入口 */}
         <div style={cardStyle}>
           <div style={cardTitleStyle}>邀请管理</div>
-
-          {/* Generate invite code */}
           <div style={sectionStyle}>
-            <div style={labelStyle}>生成邀请码</div>
             <Button
               type="primary"
+              icon={<PlusOutlined />}
               onClick={handleGenerate}
               loading={generating}
               block
             >
               生成邀请码
             </Button>
-            {inviteCode && (
-              <div style={{ marginTop: 16 }}>
-                <div style={inviteCodeDisplayStyle}>{inviteCode}</div>
-                <Button
-                  icon={<CopyOutlined />}
-                  onClick={handleCopy}
-                  block
-                >
-                  复制邀请码
-                </Button>
-              </div>
-            )}
           </div>
-
-          {/* Accept invite */}
           <div style={sectionStyle}>
-            <div style={labelStyle}>接受邀请</div>
-            <Input
-              placeholder="请输入8位邀请码"
-              value={acceptCode}
-              onChange={(e) => setAcceptCode(e.target.value.toUpperCase())}
-              maxLength={8}
-              style={{ marginBottom: 8, textTransform: 'uppercase' }}
-            />
             <Button
-              type="primary"
-              onClick={handleAccept}
-              loading={accepting}
+              icon={<UserAddOutlined />}
+              onClick={() => { setAcceptCode(''); setAcceptModalOpen(true); }}
               block
             >
               接受邀请
@@ -331,6 +303,45 @@ export default function SharingPage() {
           )}
         </div>
       </div>
+
+      {/* 邀请码弹窗 */}
+      <Modal
+        title="生成邀请码"
+        open={inviteModalOpen}
+        onCancel={() => setInviteModalOpen(false)}
+        footer={null}
+        destroyOnHidden
+      >
+        {inviteCode && (
+          <div style={{ textAlign: 'center', padding: '8px 0' }}>
+            <div style={inviteCodeDisplayStyle}>{inviteCode}</div>
+            <Button icon={<CopyOutlined />} onClick={handleCopy} block>
+              复制邀请码
+            </Button>
+          </div>
+        )}
+      </Modal>
+
+      {/* 接受邀请弹窗 */}
+      <Modal
+        title="接受邀请"
+        open={acceptModalOpen}
+        onCancel={() => setAcceptModalOpen(false)}
+        onOk={handleAccept}
+        okText="确认加入"
+        cancelText="取消"
+        confirmLoading={accepting}
+        destroyOnHidden
+      >
+        <div style={{ marginBottom: 8, fontSize: 13, color: '#666' }}>请输入8位邀请码</div>
+        <Input
+          placeholder="请输入8位邀请码"
+          value={acceptCode}
+          onChange={(e) => setAcceptCode(e.target.value.toUpperCase())}
+          maxLength={8}
+          style={{ textTransform: 'uppercase' }}
+        />
+      </Modal>
     </div>
   );
 }

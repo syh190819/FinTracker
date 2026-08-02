@@ -9,6 +9,7 @@ interface Props {
   initialPlanId?: number;
   initialNote?: string;
   initialType?: 'expense' | 'income';
+  compact?: boolean;
   onAdd: (amount: number, category: string, date: string, note: string, planId?: number | null, type?: string) => void;
   todayTotal: number;
   todayCount: number;
@@ -18,6 +19,7 @@ interface Props {
 const ExpenseForm: React.FC<Props> = ({
   categoryNames, plans, initialPlanId, initialNote,
   initialType,
+  compact,
   onAdd, todayTotal, todayCount, showDialog,
 }) => {
   const [amount, setAmount] = useState('');
@@ -52,23 +54,26 @@ const ExpenseForm: React.FC<Props> = ({
   };
 
   return (
-    <div className="card" style={{ minHeight: 235 }}>
-      <h2>记一笔</h2>
-
-      <div className="summary-grid today-summary">
-        <div className="summary-item">
-          <div className="val" style={{ color: 'var(--danger)' }}>
-            {todayCount === 0 ? '--' : formatMoney(todayTotal)}
+    <div>
+      {!compact && (
+        <>
+          <h2>记一笔</h2>
+          <div className="summary-grid today-summary">
+            <div className="summary-item">
+              <div className="val" style={{ color: 'var(--danger)' }}>
+                {todayCount === 0 ? '--' : formatMoney(todayTotal)}
+              </div>
+              <div className="lbl">今日总支出</div>
+            </div>
+            <div className="summary-item">
+              <div className="val">{todayCount === 0 ? '--' : todayCount}</div>
+              <div className="lbl">记录笔数</div>
+            </div>
           </div>
-          <div className="lbl">今日总支出</div>
-        </div>
-        <div className="summary-item">
-          <div className="val">{todayCount === 0 ? '--' : todayCount}</div>
-          <div className="lbl">记录笔数</div>
-        </div>
-      </div>
+        </>
+      )}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={(e) => { handleSubmit(e); }}>
       <div className="form-row">
         <div className="form-group">
           <label>类型</label>

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button, Empty, Input, Modal, Progress, Spin, Tag, message } from 'antd';
 import { BankOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { planApi } from '../services/planApi';
 import type { Plan } from '../types/api';
@@ -9,6 +10,7 @@ import { formatMoney } from '../utils/helpers';
 
 export default function DepositPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [txns, setTxns] = useState<Record<number, any[]>>({});
@@ -30,6 +32,16 @@ export default function DepositPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // FAB 快捷入口：?action=deposit|withdraw 自动打开第一个存款计划的对应弹窗
+  useEffect(() => {
+    const action = new URLSearchParams(location.search).get('action');
+    if ((action === 'deposit' || action === 'withdraw') && plans.length > 0) {
+      setTxnModal({ plan: plans[0], type: action });
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search, plans]);
 
   const toggleTxns = async (plan: Plan) => {
     if (txns[plan.id]) {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { message } from 'antd';
+import { Button, Modal, message } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import BudgetList from '../components/BudgetList';
 import CategoryManager from '../components/CategoryManager';
 import { budgetApi } from '../services/budgetApi';
@@ -10,6 +11,8 @@ import type { Budget, Category } from '../types/api';
 
 const BudgetPage: React.FC = () => {
   const { showDialog, dialog } = useDialog();
+  const [budgetModalOpen, setBudgetModalOpen] = useState(false);
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [budgetMonth, setBudgetMonth] = useState(currentMonthStr());
@@ -66,6 +69,7 @@ const BudgetPage: React.FC = () => {
       message.success('预算已保存');
       setBudgetAmount('');
       setSplitByDay('no');
+      setBudgetModalOpen(false);
       fetchBudgets();
     } catch {
       message.error('保存预算失败');
@@ -164,25 +168,45 @@ const BudgetPage: React.FC = () => {
   return (
     <div>
       {dialog}
-      {/* Set budget card */}
-      <div className="card">
-        <h2>设置每月预算</h2>
+      {/* 预算操作区 */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setBudgetModalOpen(true)}>
+          设置预算
+        </Button>
+        <Button icon={<PlusOutlined />} onClick={() => setCategoryModalOpen(true)}>
+          品类管理
+        </Button>
+      </div>
+
+      {/* Budget list */}
+      <BudgetList
+        budgets={budgets}
+        categories={categories}
+        onEditBudget={handleEditBudget}
+        onDeleteBudget={handleDeleteBudget}
+        onDeleteAllInMonth={handleDeleteAllInMonth}
+        onCopyBudget={handleCopyBudget}
+        showDialog={showDialog}
+      />
+
+      {/* 设置预算弹窗 */}
+      <Modal
+        title="设置每月预算"
+        open={budgetModalOpen}
+        onOk={handleSetBudget}
+        onCancel={() => setBudgetModalOpen(false)}
+        okText="保存预算"
+        cancelText="取消"
+        destroyOnHidden
+      >
         <div className="form-row">
           <div className="form-group">
             <label>目标月份</label>
-            <input
-              type="month"
-              value={budgetMonth}
-              onChange={e => setBudgetMonth(e.target.value)}
-            />
+            <input type="month" value={budgetMonth} onChange={e => setBudgetMonth(e.target.value)} />
           </div>
           <div className="form-group">
             <label>品类</label>
-            <select
-              value={budgetCategory}
-              onChange={e => setBudgetCategory(e.target.value)}
-              required
-            >
+            <select value={budgetCategory} onChange={e => setBudgetCategory(e.target.value)} required>
               <option value="" disabled>请选择品类</option>
               {categoryNames.map(c => (
                 <option key={c} value={c}>{c}</option>
@@ -214,12 +238,19 @@ const BudgetPage: React.FC = () => {
             <span style={{ color: 'var(--text-light)', fontSize: 12 }}>{dailyPreview}</span>
           </div>
         </div>
-        <button className="btn btn-primary" onClick={handleSetBudget}>保存预算</button>
-        <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 6 }}>
+        <p style={{ fontSize: 12, color: 'var(--text-light)', margin: 0 }}>
           每月预算将按该月天数自动切分为每日预算
         </p>
+      </Modal>
 
-        {/* Category manager */}
+      {/* 品类管理弹窗 */}
+      <Modal
+        title="品类管理"
+        open={categoryModalOpen}
+        onCancel={() => setCategoryModalOpen(false)}
+        footer={null}
+        destroyOnHidden
+      >
         <CategoryManager
           categories={categories}
           onAdd={handleAddCategory}
@@ -227,18 +258,7 @@ const BudgetPage: React.FC = () => {
           onToggleExclude={handleToggleExclude}
           showDialog={showDialog}
         />
-      </div>
-
-      {/* Budget list */}
-      <BudgetList
-        budgets={budgets}
-        categories={categories}
-        onEditBudget={handleEditBudget}
-        onDeleteBudget={handleDeleteBudget}
-        onDeleteAllInMonth={handleDeleteAllInMonth}
-        onCopyBudget={handleCopyBudget}
-        showDialog={showDialog}
-      />
+      </Modal>
     </div>
   );
 };

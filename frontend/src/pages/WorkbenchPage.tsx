@@ -105,6 +105,9 @@ export default function WorkbenchPage() {
         <Button block icon={<BankOutlined />} onClick={closeFab(() => navigate('/deposits'))}>
           存入存款
         </Button>
+        <Button block icon={<BankOutlined />} onClick={closeFab(() => navigate('/deposits?action=withdraw'))}>
+          取出存款
+        </Button>
       </div>
     </div>
   );
