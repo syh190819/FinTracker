@@ -22,15 +22,20 @@ import {
   EditOutlined,
   FlagOutlined,
   PlusOutlined,
+  DownOutlined,
+  RightOutlined,
 } from '@ant-design/icons';
 import dayjs, { type Dayjs } from 'dayjs';
+import { useNavigate } from 'react-router-dom';
 import { planApi } from '../services/planApi';
 import { todoApi } from '../services/todoApi';
 import type { Plan, Todo } from '../types/api';
+import { buildTodoTree, type TodoNode } from '../utils/todoTree';
 
 type Section = 'active' | 'archived';
 
 export default function PlansPage() {
+  const navigate = useNavigate();
   const [section, setSection] = useState<Section>('active');
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +50,8 @@ export default function PlansPage() {
   const [deadline, setDeadline] = useState<Dayjs | null>(null);
   const [progress, setProgress] = useState<number>(0);
   const [saving, setSaving] = useState(false);
+  const [expandedTodos, setExpandedTodos] = useState<Record<number, Todo[]>>({});
+  const [treeCollapsed, setTreeCollapsed] = useState<Set<number>>(new Set());
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -153,6 +160,104 @@ export default function PlansPage() {
     }
   };
 
+  const toggleExpand = async (plan: Plan) => {
+    if (expandedTodos[plan.id]) {
+      setExpandedTodos((prev) => {
+        const next = { ...prev };
+        delete next[plan.id];
+        return next;
+      });
+      return;
+    }
+    try {
+      const todos = await todoApi.list({ plan_id: plan.id });
+      setExpandedTodos((prev) => ({ ...prev, [plan.id]: todos }));
+    } catch {
+      message.error('加载任务失败');
+    }
+  };
+
+  const toggleTreeNode = (id: number) => {
+    setTreeCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const renderTree = (nodes: TodoNode[]) => {
+    return nodes.map((n) => {
+      const hasChildren = n.children.length > 0;
+      const isCollapsed = treeCollapsed.has(n.id);
+      return (
+        <div key={n.id}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '7px 8px',
+              borderRadius: 6,
+              background: '#fafafa',
+              border: '1px solid #f0f0f0',
+              marginBottom: 4,
+            }}
+          >
+            <Button
+              type="text"
+              size="small"
+              style={{ width: 20, padding: 0, visibility: hasChildren ? 'visible' : 'hidden' }}
+              icon={isCollapsed ? <RightOutlined /> : <DownOutlined />}
+              onClick={() => toggleTreeNode(n.id)}
+            />
+            <span
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: 3,
+                background: n.done ? '#1a1a2e' : '#fff',
+                border: '1px solid #ccc',
+                flexShrink: 0,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+                fontSize: 10,
+              }}
+            >
+              {n.done ? '✓' : ''}
+            </span>
+            <span
+              style={{
+                fontSize: 14,
+                textDecoration: n.done ? 'line-through' : 'none',
+                color: n.done ? '#bbb' : '#333',
+                flex: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {n.title}
+            </span>
+            {n.children.length > 0 && !n.done && n.children.every((c) => c.done) && (
+              <Tag color="green" style={{ marginInlineEnd: 0, fontSize: 11 }}>
+                子待办已全部完成
+              </Tag>
+            )}
+            <span style={{ fontSize: 12, color: '#aaa', flexShrink: 0 }}>
+              {n.due_date ? n.due_date : ''}
+            </span>
+          </div>
+          {hasChildren && !isCollapsed && (
+            <div style={{ marginLeft: 28 }}>{renderTree(n.children)}</div>
+          )}
+        </div>
+      );
+    });
+  };
+
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: 'clamp(12px, 3vw, 24px)' }}>
       <div
@@ -240,6 +345,11 @@ export default function PlansPage() {
                       {plan.done_count}/{plan.total_count} 项待办
                     </Tag>
                   )}
+                  {plan.expense_total > 0 && (
+                    <Tag style={{ marginLeft: 8 }} color="blue">
+                      关联支出 ¥{plan.expense_total.toFixed(2)}
+                    </Tag>
+                  )}
                 </div>
 
                 <Progress percent={plan.progress} strokeColor="#1a1a2e" />
@@ -248,14 +358,46 @@ export default function PlansPage() {
                   <div style={{ fontSize: 12, color: '#999', marginTop: 6 }}>手动进度</div>
                 )}
 
-                <Button
-                  block
-                  icon={<InboxOutlined />}
-                  style={{ marginTop: 14 }}
-                  onClick={() => handleArchive(plan)}
-                >
-                  归档
-                </Button>
+                <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
+                  <Button
+                    style={{ flex: 1 }}
+                    icon={<InboxOutlined />}
+                    onClick={() => handleArchive(plan)}
+                  >
+                    归档
+                  </Button>
+                  <Button
+                    style={{ flex: 1 }}
+                    onClick={() =>
+                      navigate(`/expenses?plan_id=${plan.id}&note=${encodeURIComponent(plan.name)}`)
+                    }
+                  >
+                    记一笔
+                  </Button>
+                </div>
+
+                <div style={{ marginTop: 12 }}>
+                  <Button
+                    type="text"
+                    size="small"
+                    block
+                    onClick={() => toggleExpand(plan)}
+                    style={{ color: '#666' }}
+                  >
+                    {expandedTodos[plan.id] ? '收起任务' : '展开任务'}
+                  </Button>
+                  {expandedTodos[plan.id] && (
+                    <div style={{ marginTop: 8 }}>
+                      {buildTodoTree(expandedTodos[plan.id]).length === 0 ? (
+                        <div style={{ fontSize: 13, color: '#aaa', textAlign: 'center', padding: 8 }}>
+                          暂无待办
+                        </div>
+                      ) : (
+                        renderTree(buildTodoTree(expandedTodos[plan.id]))
+                      )}
+                    </div>
+                  )}
+                </div>
               </Card>
             </Col>
           ))}
