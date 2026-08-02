@@ -158,7 +158,7 @@ pub async fn update_scope(
     Json(req): Json<ScopeUpdate>,
 ) -> Result<Json<Sharing>, StatusCode> {
     let sharing = sqlx::query_as::<_, Sharing>(
-        "UPDATE sharing SET scope = $1 WHERE id = $2 AND user_a_id = $3 \
+        "UPDATE sharing SET scope = $1 WHERE id = $2 AND (user_a_id = $3 OR user_b_id = $3) \
          RETURNING id, user_a_id, user_b_id, status, invite_code, confirmed_by_b, scope, created_at",
     )
     .bind(&req.scope)
