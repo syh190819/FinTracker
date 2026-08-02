@@ -249,7 +249,7 @@ export default function PlansPage() {
   );
 
   const renderBudgetBlock = (plan: Plan) => (
-    <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px dashed #eee' }}>
+    <div style={{ marginTop: 12, paddingTop: 12 }}>
       <div style={{ fontSize: 13, marginBottom: 4 }}>
         收入 {formatMoney(plan.income_total)} / 目标 {formatMoney(plan.income_goal)}
       </div>
