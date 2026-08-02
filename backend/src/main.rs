@@ -3,10 +3,10 @@ mod handlers {
     pub mod auth;
     pub mod budgets;
     pub mod categories;
-    pub mod deposits;
     pub mod expenses;
     pub mod import_export;
     pub mod plans;
+    pub mod profile;
     pub mod sharing;
     pub mod statistics;
     pub mod todos;
@@ -81,32 +81,6 @@ async fn main() {
             "/api/budgets/{id}",
             delete(handlers::budgets::delete),
         )
-        // Deposit Plans
-        .route(
-            "/api/deposit-plans",
-            get(handlers::deposits::list_plans),
-        )
-        .route(
-            "/api/deposit-plans",
-            post(handlers::deposits::create_plan),
-        )
-        .route(
-            "/api/deposit-plans/{id}",
-            put(handlers::deposits::update_plan),
-        )
-        .route(
-            "/api/deposit-plans/{id}",
-            delete(handlers::deposits::delete_plan),
-        )
-        // Deposit Transactions
-        .route(
-            "/api/deposit-plans/{plan_id}/transactions",
-            get(handlers::deposits::list_transactions),
-        )
-        .route(
-            "/api/deposit-plans/{plan_id}/transactions",
-            post(handlers::deposits::create_transaction),
-        )
         // Sharing
         .route("/api/share/invite", post(handlers::sharing::invite))
         .route("/api/share/accept", post(handlers::sharing::accept))
@@ -129,6 +103,15 @@ async fn main() {
         .route("/api/plans", post(handlers::plans::create))
         .route("/api/plans/{id}", put(handlers::plans::update))
         .route("/api/plans/{id}", delete(handlers::plans::delete))
+        // 存取流水（并入计划）
+        .route(
+            "/api/plans/{plan_id}/transactions",
+            get(handlers::plans::list_transactions),
+        )
+        .route(
+            "/api/plans/{plan_id}/transactions",
+            post(handlers::plans::create_transaction),
+        )
         // Workbench
         .route(
             "/api/workbench/summary",
@@ -150,6 +133,15 @@ async fn main() {
         // Import / Export
         .route("/api/export", get(handlers::import_export::export_all))
         .route("/api/import", post(handlers::import_export::import_all))
+        // 个人中心
+        .route(
+            "/api/profile/username",
+            put(handlers::profile::update_username),
+        )
+        .route(
+            "/api/profile/password",
+            put(handlers::profile::update_password),
+        )
         .layer(axum_middleware::from_fn(middleware::jwt::auth_middleware));
 
     let app = Router::new()

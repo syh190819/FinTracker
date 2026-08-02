@@ -10,6 +10,9 @@ pub struct WorkbenchSummary {
     pub month_total: f64, // 个人 + 共享
     pub month_personal: f64,
     pub month_shared: f64,
+    pub month_income: f64,
+    pub month_income_personal: f64,
+    pub month_income_shared: f64,
     pub month_budget: f64,
     pub today_todo_count: i64,
     pub open_todo_count: i64,
@@ -28,7 +31,8 @@ pub async fn summary(
 
     let month_personal: f64 = sqlx::query_scalar(
         "SELECT CAST(COALESCE(SUM(amount), 0) AS DOUBLE PRECISION) FROM expenses \
-         WHERE user_id = $1 AND deleted_at IS NULL AND to_char(date, 'YYYY-MM') = $2",
+         WHERE user_id = $1 AND deleted_at IS NULL AND type = 'expense' \
+           AND to_char(date, 'YYYY-MM') = $2",
     )
     .bind(user_id)
     .bind(&month)
@@ -42,7 +46,7 @@ pub async fn summary(
     } else {
         let mut qb = sqlx::QueryBuilder::new(
             "SELECT CAST(COALESCE(SUM(amount), 0) AS DOUBLE PRECISION) FROM expenses \
-             WHERE deleted_at IS NULL AND to_char(date, 'YYYY-MM') = ",
+             WHERE deleted_at IS NULL AND type = 'expense' AND to_char(date, 'YYYY-MM') = ",
         );
         qb.push_bind(&month);
         qb.push(" AND user_id IN (");
@@ -57,6 +61,38 @@ pub async fn summary(
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
     };
     let month_total = month_personal + month_shared;
+
+    let month_income_personal: f64 = sqlx::query_scalar(
+        "SELECT CAST(COALESCE(SUM(amount), 0) AS DOUBLE PRECISION) FROM expenses \
+         WHERE user_id = $1 AND deleted_at IS NULL AND type = 'income' \
+           AND to_char(date, 'YYYY-MM') = $2",
+    )
+    .bind(user_id)
+    .bind(&month)
+    .fetch_one(&db)
+    .await
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let month_income_shared: f64 = if shared_ids.is_empty() {
+        0.0
+    } else {
+        let mut qb = sqlx::QueryBuilder::new(
+            "SELECT CAST(COALESCE(SUM(amount), 0) AS DOUBLE PRECISION) FROM expenses \
+             WHERE deleted_at IS NULL AND type = 'income' AND to_char(date, 'YYYY-MM') = ",
+        );
+        qb.push_bind(&month);
+        qb.push(" AND user_id IN (");
+        let mut sep = qb.separated(", ");
+        for uid in &shared_ids {
+            sep.push_bind(uid);
+        }
+        qb.push(")");
+        qb.build_query_scalar::<f64>()
+            .fetch_one(&db)
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+    };
+    let month_income = month_income_personal + month_income_shared;
 
     let month_budget: f64 = sqlx::query_scalar(
         "SELECT CAST(COALESCE(SUM(amount), 0) AS DOUBLE PRECISION) FROM budgets \
@@ -129,6 +165,9 @@ pub async fn summary(
         month_total,
         month_personal,
         month_shared,
+        month_income,
+        month_income_personal,
+        month_income_shared,
         month_budget,
         today_todo_count,
         open_todo_count,

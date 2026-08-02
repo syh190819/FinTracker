@@ -111,8 +111,9 @@ pub(crate) async fn ensure_monthly_deposit_todos(
     let month = now.format("%Y-%m").to_string();
 
     let plans = sqlx::query_as::<_, (i32, String, f64, i32)>(
-        "SELECT id, name, CAST(monthly_goal AS DOUBLE PRECISION), auto_todo_day FROM deposit_plans \
-         WHERE user_id = $1 AND deleted_at IS NULL AND auto_todo_enabled = true AND monthly_goal > 0",
+        "SELECT id, name, CAST(monthly_goal AS DOUBLE PRECISION), auto_todo_day FROM plans \
+         WHERE user_id = $1 AND deleted_at IS NULL AND auto_todo_enabled = true AND monthly_goal > 0 \
+           AND plan_types @> ARRAY['deposit']",
     )
     .bind(user_id)
     .fetch_all(db)

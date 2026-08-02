@@ -12,6 +12,7 @@ pub struct Expense {
     pub id: i32,
     pub user_id: i32,
     pub amount: f64,
+    pub r#type: String,
     pub category: String,
     pub date: chrono::NaiveDate,
     pub note: String,
@@ -29,6 +30,7 @@ pub struct ExpenseQuery {
     pub date: Option<String>,
     pub month: Option<String>,
     pub category: Option<String>,
+    pub r#type: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -38,6 +40,7 @@ pub struct CreateExpense {
     pub date: String,
     pub note: Option<String>,
     pub plan_id: Option<i32>,
+    pub r#type: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -47,6 +50,7 @@ pub struct UpdateExpense {
     pub date: Option<String>,
     pub note: Option<String>,
     pub plan_id: Option<Option<i32>>,
+    pub r#type: Option<String>,
 }
 
 async fn plan_belongs_to(db: &PgPool, user_id: i32, plan_id: i32) -> Result<bool, StatusCode> {
@@ -67,7 +71,7 @@ pub async fn list(
     Query(query): Query<ExpenseQuery>,
 ) -> Result<Json<Vec<Expense>>, StatusCode> {
     let mut sql = String::from(
-        "SELECT e.id, e.user_id, CAST(e.amount AS DOUBLE PRECISION) as amount, e.category, e.date, e.note, \
+        "SELECT e.id, e.user_id, CAST(e.amount AS DOUBLE PRECISION) as amount, e.type, e.category, e.date, e.note, \
                 e.created_by, e.created_at, e.updated_by, e.updated_at, e.deleted_at, \
                 e.plan_id, p.name AS plan_name \
          FROM expenses e LEFT JOIN plans p ON p.id = e.plan_id AND p.deleted_at IS NULL \
@@ -91,6 +95,12 @@ pub async fn list(
     }
     if let Some(ref category) = query.category {
         sql.push_str(&format!(" AND e.category = '{}'", category));
+    }
+    if let Some(ref t) = query.r#type {
+        if t != "expense" && t != "income" {
+            return Err(StatusCode::UNPROCESSABLE_ENTITY);
+        }
+        sql.push_str(&format!(" AND e.type = '{}'", t));
     }
 
     sql.push_str(" ORDER BY e.date DESC, e.created_at DESC");
@@ -119,6 +129,10 @@ pub async fn create(
         .map_err(|_| StatusCode::UNPROCESSABLE_ENTITY)?;
 
     let note = req.note.unwrap_or_default();
+    let expense_type = req.r#type.unwrap_or_else(|| "expense".to_string());
+    if expense_type != "expense" && expense_type != "income" {
+        return Err(StatusCode::UNPROCESSABLE_ENTITY);
+    }
     if let Some(pid) = req.plan_id {
         if !plan_belongs_to(&db, user_id, pid).await? {
             return Err(StatusCode::UNPROCESSABLE_ENTITY);
@@ -126,14 +140,15 @@ pub async fn create(
     }
 
     let expense = sqlx::query_as::<_, Expense>(
-        "INSERT INTO expenses (user_id, amount, category, date, note, created_by, plan_id) \
-         VALUES ($1, $2, $3, $4, $5, $6, $7) \
-         RETURNING id, user_id, CAST(amount AS DOUBLE PRECISION) as amount, category, date, note, \
+        "INSERT INTO expenses (user_id, amount, type, category, date, note, created_by, plan_id) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) \
+         RETURNING id, user_id, CAST(amount AS DOUBLE PRECISION) as amount, type, category, date, note, \
                    created_by, created_at, updated_by, updated_at, deleted_at, \
                    plan_id, NULL AS plan_name",
     )
     .bind(user_id)
     .bind(req.amount)
+    .bind(&expense_type)
     .bind(&req.category)
     .bind(date)
     .bind(&note)
@@ -153,7 +168,7 @@ pub async fn update(
     Json(req): Json<UpdateExpense>,
 ) -> Result<Json<Expense>, StatusCode> {
     let existing = sqlx::query_as::<_, Expense>(
-        "SELECT e.id, e.user_id, CAST(e.amount AS DOUBLE PRECISION) as amount, e.category, e.date, e.note, \
+        "SELECT e.id, e.user_id, CAST(e.amount AS DOUBLE PRECISION) as amount, e.type, e.category, e.date, e.note, \
                 e.created_by, e.created_at, e.updated_by, e.updated_at, e.deleted_at, \
                 e.plan_id, p.name AS plan_name \
          FROM expenses e LEFT JOIN plans p ON p.id = e.plan_id AND p.deleted_at IS NULL \
@@ -185,16 +200,21 @@ pub async fn update(
         Some(None) => None,
         None => existing.plan_id,
     };
+    let expense_type = req.r#type.unwrap_or(existing.r#type);
+    if expense_type != "expense" && expense_type != "income" {
+        return Err(StatusCode::UNPROCESSABLE_ENTITY);
+    }
 
     let expense = sqlx::query_as::<_, Expense>(
-        "UPDATE expenses SET amount = $1, category = $2, date = $3, note = $4, updated_by = $5, \
-                plan_id = $6, updated_at = NOW() \
-         WHERE id = $7 \
-         RETURNING id, user_id, CAST(amount AS DOUBLE PRECISION) as amount, category, date, note, \
+        "UPDATE expenses SET amount = $1, type = $2, category = $3, date = $4, note = $5, updated_by = $6, \
+                plan_id = $7, updated_at = NOW() \
+         WHERE id = $8 \
+         RETURNING id, user_id, CAST(amount AS DOUBLE PRECISION) as amount, type, category, date, note, \
                    created_by, created_at, updated_by, updated_at, deleted_at, \
                    plan_id, NULL AS plan_name",
     )
     .bind(amount)
+    .bind(&expense_type)
     .bind(&category)
     .bind(date)
     .bind(&note)

@@ -39,8 +39,8 @@ pub async fn export_all(
     })
     .collect();
 
-    let expenses: Vec<serde_json::Value> = sqlx::query_as::<sqlx::Postgres, (String, f64, String, String)>(
-        "SELECT category, CAST(amount AS DOUBLE PRECISION), to_char(date, 'YYYY-MM-DD'), COALESCE(note, '') \
+    let expenses: Vec<serde_json::Value> = sqlx::query_as::<sqlx::Postgres, (String, f64, String, String, String)>(
+        "SELECT category, CAST(amount AS DOUBLE PRECISION), to_char(date, 'YYYY-MM-DD'), COALESCE(note, ''), type \
          FROM expenses WHERE user_id = $1 AND deleted_at IS NULL ORDER BY date",
     )
     .bind(user_id)
@@ -48,8 +48,8 @@ pub async fn export_all(
     .await
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
     .into_iter()
-    .map(|(category, amount, date, note)| {
-        serde_json::json!({"category": category, "amount": amount, "date": date, "note": note})
+    .map(|(category, amount, date, note, ty)| {
+        serde_json::json!({"category": category, "amount": amount, "date": date, "note": note, "type": ty})
     })
     .collect();
 
@@ -68,8 +68,8 @@ pub async fn export_all(
     .collect();
 
     let deposit_plans: Vec<serde_json::Value> = sqlx::query_as::<sqlx::Postgres, (String, String, f64)>(
-        "SELECT name, category, CAST(monthly_goal AS DOUBLE PRECISION) \
-         FROM deposit_plans WHERE user_id = $1 AND deleted_at IS NULL ORDER BY sort_order",
+        "SELECT name, '' AS category, CAST(monthly_goal AS DOUBLE PRECISION) \
+         FROM plans WHERE user_id = $1 AND deleted_at IS NULL AND plan_types @> ARRAY['deposit'] ORDER BY id",
     )
     .bind(user_id)
     .fetch_all(&db)
@@ -84,8 +84,9 @@ pub async fn export_all(
     let deposit_transactions: Vec<serde_json::Value> = sqlx::query_as::<sqlx::Postgres, (String, f64, String, String, String)>(
         "SELECT dt.type, CAST(dt.amount AS DOUBLE PRECISION), to_char(dt.date, 'YYYY-MM-DD'), COALESCE(dt.source, ''), COALESCE(dt.note, '') \
          FROM deposit_transactions dt \
-         JOIN deposit_plans dp ON dp.id = dt.plan_id \
-         WHERE dp.user_id = $1 AND dt.deleted_at IS NULL AND dp.deleted_at IS NULL \
+         JOIN plans p ON p.id = dt.plan_id \
+         WHERE p.user_id = $1 AND dt.deleted_at IS NULL AND p.deleted_at IS NULL \
+           AND p.plan_types @> ARRAY['deposit'] \
          ORDER BY dt.date",
     )
     .bind(user_id)
@@ -120,11 +121,11 @@ pub async fn import_all(
     let _ = sqlx::query("UPDATE budgets SET deleted_at = NOW() WHERE user_id = $1")
         .bind(user_id).execute(&db).await;
     let _ = sqlx::query(
-        "UPDATE deposit_transactions dt SET deleted_at = NOW() FROM deposit_plans dp \
-         WHERE dp.id = dt.plan_id AND dp.user_id = $1",
+        "UPDATE deposit_transactions dt SET deleted_at = NOW() FROM plans p \
+         WHERE p.id = dt.plan_id AND p.user_id = $1",
     )
     .bind(user_id).execute(&db).await;
-    let _ = sqlx::query("UPDATE deposit_plans SET deleted_at = NOW() WHERE user_id = $1")
+    let _ = sqlx::query("UPDATE plans SET deleted_at = NOW() WHERE user_id = $1 AND plan_types @> ARRAY['deposit']")
         .bind(user_id).execute(&db).await;
 
     if let Some(categories) = data.categories {
@@ -153,14 +154,16 @@ pub async fn import_all(
             let category = e.get("category").and_then(|v| v.as_str()).unwrap_or("");
             let date_str = e.get("date").and_then(|v| v.as_str()).unwrap_or("");
             let note = e.get("note").and_then(|v| v.as_str()).unwrap_or("");
+            let ty = e.get("type").and_then(|v| v.as_str()).unwrap_or("expense");
             if amount > 0.0 && !category.is_empty() && !date_str.is_empty() {
                 if let Ok(date) = chrono::NaiveDate::parse_from_str(date_str, "%Y-%m-%d") {
                     let _ = sqlx::query(
-                        "INSERT INTO expenses (user_id, amount, category, date, note, created_by) \
-                         VALUES ($1, $2, $3, $4, $5, $6)",
+                        "INSERT INTO expenses (user_id, amount, type, category, date, note, created_by) \
+                         VALUES ($1, $2, $3, $4, $5, $6, $7)",
                     )
                     .bind(user_id)
                     .bind(amount)
+                    .bind(if ty == "income" { "income" } else { "expense" })
                     .bind(category)
                     .bind(date)
                     .bind(note)
@@ -198,15 +201,13 @@ pub async fn import_all(
     if let Some(plans) = data.deposit_plans {
         for p in plans {
             let name = p.get("name").and_then(|v| v.as_str()).unwrap_or("");
-            let category = p.get("category").and_then(|v| v.as_str()).unwrap_or("");
             let monthly_goal = p.get("monthly_goal").and_then(|v| v.as_f64()).unwrap_or(0.0);
             if !name.is_empty() {
                 let _ = sqlx::query(
-                    "INSERT INTO deposit_plans (user_id, name, category, monthly_goal) VALUES ($1, $2, $3, $4)",
+                    "INSERT INTO plans (user_id, name, plan_types, monthly_goal) VALUES ($1, $2, ARRAY['deposit'], $3)",
                 )
                 .bind(user_id)
                 .bind(name)
-                .bind(category)
                 .bind(monthly_goal)
                 .execute(&db)
                 .await;
