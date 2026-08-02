@@ -331,15 +331,19 @@ export default function PlansPage() {
               {plan.archived && <Tag>已归档</Tag>}
               {plan.deadline && <span style={{ fontSize: 12, color: '#999' }}>截止 {plan.deadline}</span>}
               <div style={{ flex: 1 }} />
+              <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(plan)}>编辑</Button>
+              {!plan.archived && <Button size="small" icon={<InboxOutlined />} onClick={() => handleArchive(plan)}>归档</Button>}
+              <Button size="small" danger icon={<DeleteOutlined />} onClick={() => handleDelete(plan)}>删除</Button>
+            </div>
+
+            {/* 收入 / 支出（虚线下方，样式参考存入/取出：右侧小按钮） */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12, paddingTop: 12, borderTop: '1px dashed #e0e0e0', flexWrap: 'wrap' }}>
               <Button size="small" onClick={() => navigate(`/expenses?type=income&plan_id=${plan.id}&note=${encodeURIComponent(plan.name)}`)}>
                 收入
               </Button>
               <Button size="small" onClick={() => navigate(`/expenses?type=expense&plan_id=${plan.id}&note=${encodeURIComponent(plan.name)}`)}>
                 支出
               </Button>
-              <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(plan)}>编辑</Button>
-              {!plan.archived && <Button size="small" icon={<InboxOutlined />} onClick={() => handleArchive(plan)}>归档</Button>}
-              <Button size="small" danger icon={<DeleteOutlined />} onClick={() => handleDelete(plan)}>删除</Button>
             </div>
 
             {plan.plan_types.includes('budget') && renderBudgetBlock(plan)}
