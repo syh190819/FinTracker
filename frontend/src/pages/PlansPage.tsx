@@ -249,9 +249,19 @@ export default function PlansPage() {
   );
 
   const renderBudgetBlock = (plan: Plan) => (
-    <div style={{ marginTop: 12, paddingTop: 12 }}>
-      <div style={{ fontSize: 13, marginBottom: 4 }}>
-        收入 {formatMoney(plan.income_total)} / 目标 {formatMoney(plan.income_goal)}
+    <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px dashed #e0e0e0' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+        <span style={{ fontSize: 13 }}>
+          收入 {formatMoney(plan.income_total)} / 目标 {formatMoney(plan.income_goal)}
+        </span>
+        <span style={{ display: 'flex', gap: 6 }}>
+          <Button size="small" onClick={() => navigate(`/expenses?type=income&plan_id=${plan.id}&note=${encodeURIComponent(plan.name)}`)}>
+            收入
+          </Button>
+          <Button size="small" onClick={() => navigate(`/expenses?type=expense&plan_id=${plan.id}&note=${encodeURIComponent(plan.name)}`)}>
+            支出
+          </Button>
+        </span>
       </div>
       <Progress percent={plan.income_goal > 0 ? Math.min(100, Math.round((plan.income_total / plan.income_goal) * 100)) : 0} size="small" strokeColor="#1e8449" />
       <div style={{ fontSize: 13, margin: '6px 0 4px' }}>
@@ -334,16 +344,6 @@ export default function PlansPage() {
               <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(plan)}>编辑</Button>
               {!plan.archived && <Button size="small" icon={<InboxOutlined />} onClick={() => handleArchive(plan)}>归档</Button>}
               <Button size="small" danger icon={<DeleteOutlined />} onClick={() => handleDelete(plan)}>删除</Button>
-            </div>
-
-            {/* 收入 / 支出（虚线下方，样式参考存入/取出：右侧小按钮） */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12, paddingTop: 12, borderTop: '1px dashed #e0e0e0', flexWrap: 'wrap' }}>
-              <Button size="small" onClick={() => navigate(`/expenses?type=income&plan_id=${plan.id}&note=${encodeURIComponent(plan.name)}`)}>
-                收入
-              </Button>
-              <Button size="small" onClick={() => navigate(`/expenses?type=expense&plan_id=${plan.id}&note=${encodeURIComponent(plan.name)}`)}>
-                支出
-              </Button>
             </div>
 
             {plan.plan_types.includes('budget') && renderBudgetBlock(plan)}
