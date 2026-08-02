@@ -6,8 +6,11 @@ mod handlers {
     pub mod deposits;
     pub mod expenses;
     pub mod import_export;
+    pub mod plans;
     pub mod sharing;
     pub mod statistics;
+    pub mod todos;
+    pub mod workbench;
 }
 mod middleware;
 mod models {
@@ -116,6 +119,21 @@ async fn main() {
             put(handlers::sharing::update_scope),
         )
         .route("/api/share/{id}", delete(handlers::sharing::delete))
+        // Todos
+        .route("/api/todos", get(handlers::todos::list))
+        .route("/api/todos", post(handlers::todos::create))
+        .route("/api/todos/{id}", put(handlers::todos::update))
+        .route("/api/todos/{id}", delete(handlers::todos::delete))
+        // Plans
+        .route("/api/plans", get(handlers::plans::list))
+        .route("/api/plans", post(handlers::plans::create))
+        .route("/api/plans/{id}", put(handlers::plans::update))
+        .route("/api/plans/{id}", delete(handlers::plans::delete))
+        // Workbench
+        .route(
+            "/api/workbench/summary",
+            get(handlers::workbench::summary),
+        )
         // Statistics
         .route(
             "/api/statistics/monthly",
