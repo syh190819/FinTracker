@@ -248,9 +248,11 @@ export default function PlansPage() {
       </div>
       <Progress percent={plan.monthly_goal > 0 ? Math.min(100, Math.round((plan.balance / plan.monthly_goal) * 100)) : 0} size="small" strokeColor="#1a1a2e" />
       {plan.auto_todo_enabled && <div style={{ fontSize: 12, color: '#999' }}>每月 {plan.auto_todo_day} 号自动生成存钱待办</div>}
-      <Button type="text" size="small" style={{ padding: 0, marginTop: 4 }} onClick={() => openTxnList(plan)}>
-        展示流水
-      </Button>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 6 }}>
+        <Button type="text" size="small" style={{ padding: 0 }} onClick={() => openTxnList(plan)}>
+          查看流水
+        </Button>
+      </div>
     </div>
   );
 
@@ -293,9 +295,11 @@ export default function PlansPage() {
         </Button>
       </div>
       <Progress percent={plan.progress} size="small" strokeColor="#1a1a2e" />
-      <Button type="text" size="small" style={{ padding: 0, marginTop: 4 }} onClick={() => openTaskModal(plan)}>
-        查看任务
-      </Button>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 6 }}>
+        <Button type="text" size="small" style={{ padding: 0 }} onClick={() => openTaskModal(plan)}>
+          查看任务
+        </Button>
+      </div>
     </div>
   );
 
