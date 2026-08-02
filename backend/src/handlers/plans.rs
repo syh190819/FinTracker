@@ -116,7 +116,7 @@ pub async fn create(
 
     let plan = sqlx::query_as::<_, Plan>(
         "INSERT INTO plans (user_id, name, deadline, progress) VALUES ($1, $2, $3, $4) \
-         RETURNING id, user_id, name, deadline, progress, 0 AS done_count, 0 AS total_count, \
+         RETURNING id, user_id, name, deadline, progress, 0::BIGINT AS done_count, 0::BIGINT AS total_count, \
                    archived, archived_at, created_at, updated_at, deleted_at",
     )
     .bind(user_id)

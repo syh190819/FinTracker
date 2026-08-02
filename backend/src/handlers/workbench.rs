@@ -25,7 +25,7 @@ pub async fn summary(
     let today = now.format("%Y-%m-%d").to_string();
 
     let month_total: f64 = sqlx::query_scalar(
-        "SELECT COALESCE(SUM(amount), 0) FROM expenses \
+        "SELECT CAST(COALESCE(SUM(amount), 0) AS DOUBLE PRECISION) FROM expenses \
          WHERE user_id = $1 AND deleted_at IS NULL AND to_char(date, 'YYYY-MM') = $2",
     )
     .bind(user_id)
@@ -35,7 +35,7 @@ pub async fn summary(
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     let month_budget: f64 = sqlx::query_scalar(
-        "SELECT COALESCE(SUM(amount), 0) FROM budgets \
+        "SELECT CAST(COALESCE(SUM(amount), 0) AS DOUBLE PRECISION) FROM budgets \
          WHERE user_id = $1 AND deleted_at IS NULL AND month = $2",
     )
     .bind(user_id)
