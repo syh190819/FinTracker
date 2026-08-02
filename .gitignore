@@ -9,6 +9,9 @@ frontend/dist/
 # Local environment config (contains secrets)
 backend/.env
 
+# Runtime logs
+*.log
+
 # Editor / tool memory
 .workbuddy/
 
