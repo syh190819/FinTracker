@@ -33,7 +33,7 @@ export default function WorkbenchPage() {
 
   const budgetPercent =
     summary && summary.month_budget > 0
-      ? Math.min(100, Math.round((summary.month_total / summary.month_budget) * 100))
+      ? Math.min(100, Math.round((summary.month_personal / summary.month_budget) * 100))
       : 0;
 
   const quickActionStyle: React.CSSProperties = {
@@ -81,7 +81,11 @@ export default function WorkbenchPage() {
                   {formatMoney(summary.month_total)}
                 </div>
                 <div style={{ fontSize: 13, color: '#999', marginBottom: 8 }}>
-                  预算 {formatMoney(summary.month_budget)}
+                  个人 {formatMoney(summary.month_personal)} · 共享{' '}
+                  {formatMoney(summary.month_shared)}
+                </div>
+                <div style={{ fontSize: 13, color: '#999', marginBottom: 8 }}>
+                  个人支出 / 预算 {formatMoney(summary.month_budget)}
                 </div>
                 <Progress
                   percent={budgetPercent}

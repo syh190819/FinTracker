@@ -244,7 +244,9 @@ export interface UpdatePlan {
 
 // === Workbench ===
 export interface WorkbenchSummary {
-  month_total: number;
+  month_total: number; // 个人 + 共享
+  month_personal: number;
+  month_shared: number;
   month_budget: number;
   today_todo_count: number;
   open_todo_count: number;

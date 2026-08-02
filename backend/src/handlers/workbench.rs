@@ -7,7 +7,9 @@ use crate::handlers::todos::{Todo, TODO_COLUMNS};
 
 #[derive(Debug, Serialize)]
 pub struct WorkbenchSummary {
-    pub month_total: f64,
+    pub month_total: f64, // 个人 + 共享
+    pub month_personal: f64,
+    pub month_shared: f64,
     pub month_budget: f64,
     pub today_todo_count: i64,
     pub open_todo_count: i64,
@@ -24,7 +26,7 @@ pub async fn summary(
     let month = now.format("%Y-%m").to_string();
     let today = now.format("%Y-%m-%d").to_string();
 
-    let month_total: f64 = sqlx::query_scalar(
+    let month_personal: f64 = sqlx::query_scalar(
         "SELECT CAST(COALESCE(SUM(amount), 0) AS DOUBLE PRECISION) FROM expenses \
          WHERE user_id = $1 AND deleted_at IS NULL AND to_char(date, 'YYYY-MM') = $2",
     )
@@ -33,6 +35,28 @@ pub async fn summary(
     .fetch_one(&db)
     .await
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let shared_ids = get_shared_user_ids(&db, user_id).await;
+    let month_shared: f64 = if shared_ids.is_empty() {
+        0.0
+    } else {
+        let mut qb = sqlx::QueryBuilder::new(
+            "SELECT CAST(COALESCE(SUM(amount), 0) AS DOUBLE PRECISION) FROM expenses \
+             WHERE deleted_at IS NULL AND to_char(date, 'YYYY-MM') = ",
+        );
+        qb.push_bind(&month);
+        qb.push(" AND user_id IN (");
+        let mut sep = qb.separated(", ");
+        for uid in &shared_ids {
+            sep.push_bind(uid);
+        }
+        qb.push(")");
+        qb.build_query_scalar::<f64>()
+            .fetch_one(&db)
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+    };
+    let month_total = month_personal + month_shared;
 
     let month_budget: f64 = sqlx::query_scalar(
         "SELECT CAST(COALESCE(SUM(amount), 0) AS DOUBLE PRECISION) FROM budgets \
@@ -94,6 +118,8 @@ pub async fn summary(
 
     Ok(Json(WorkbenchSummary {
         month_total,
+        month_personal,
+        month_shared,
         month_budget,
         today_todo_count,
         open_todo_count,
@@ -101,4 +127,18 @@ pub async fn summary(
         recent_todos,
         active_plans,
     }))
+}
+
+async fn get_shared_user_ids(db: &PgPool, user_id: i32) -> Vec<i32> {
+    let rows = sqlx::query_as::<sqlx::Postgres, (i32,)>(
+        "SELECT CASE WHEN user_a_id = $1 THEN user_b_id ELSE user_a_id END \
+         FROM sharing WHERE (user_a_id = $1 OR user_b_id = $1) \
+         AND status = 'active' AND confirmed_by_b = true",
+    )
+    .bind(user_id)
+    .fetch_all(db)
+    .await
+    .unwrap_or_default();
+
+    rows.into_iter().map(|r| r.0).collect()
 }
