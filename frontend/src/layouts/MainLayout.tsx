@@ -186,14 +186,21 @@ export default function MainLayout() {
       {/* 左侧常驻导航 */}
       <div
         style={{
-          width: collapsed ? 64 : 200,
+          width: collapsed ? 64 : 220,
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          bottom: 0,
           height: '100vh',
           flexShrink: 0,
           borderRight: '1px solid #f0f0f0',
           background: '#fff',
           display: 'flex',
           flexDirection: 'column',
+          zIndex: 1000,
           transition: 'width .2s',
+          boxShadow: collapsed ? 'none' : '2px 0 14px rgba(0,0,0,0.10)',
+          overflow: 'hidden',
         }}
       >
         <div
@@ -246,7 +253,7 @@ export default function MainLayout() {
       </div>
 
       {/* 主区域 */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', marginLeft: 64 }}>
         {/* 顶栏 */}
         <div
           style={{
