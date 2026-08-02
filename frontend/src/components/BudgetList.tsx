@@ -14,7 +14,7 @@ interface Props {
 }
 
 const BudgetList: React.FC<Props> = ({
-  budgets, categories, onEditBudget, onDeleteBudget, onDeleteAllInMonth, onCopyBudget, showDialog,
+  budgets, onEditBudget, onDeleteBudget, onDeleteAllInMonth, onCopyBudget, showDialog,
 }) => {
   // Group budgets by month
   const grouped = budgets.reduce((acc, b) => {
@@ -172,7 +172,6 @@ const BudgetList: React.FC<Props> = ({
         {months.map((month, idx) => {
           const monthBudgets = grouped[month];
           const days = daysInMonth(month);
-          const isCurrent = month === curMonth;
           const groupId = `bg-${idx}`;
           const totalMonth = monthBudgets.reduce((s, b) => s + b.amount, 0);
 

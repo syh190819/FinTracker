@@ -190,8 +190,8 @@ export default function StatisticsPage() {
                   />
                   <Tooltip
                     contentStyle={chartTooltipStyle}
-                    formatter={(value: number) => [formatMoney(value), '支出']}
-                    labelFormatter={(label: string) => monthLabel(label)}
+                    formatter={(value) => [formatMoney(Number(value)), '支出']}
+                    labelFormatter={(label) => monthLabel(String(label))}
                   />
                   <Line
                     type="monotone"
@@ -220,8 +220,8 @@ export default function StatisticsPage() {
                       cx="50%"
                       cy="50%"
                       outerRadius={100}
-                      label={({ category, percent }) =>
-                        `${category} ${(percent * 100).toFixed(0)}%`
+                      label={({ name, percent }) =>
+                        `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
                       }
                       labelLine
                     >
@@ -234,7 +234,7 @@ export default function StatisticsPage() {
                     </Pie>
                     <Tooltip
                       contentStyle={chartTooltipStyle}
-                      formatter={(value: number) => [formatMoney(value), '支出']}
+                      formatter={(value) => [formatMoney(Number(value)), '支出']}
                     />
                     <Legend
                       verticalAlign="bottom"
@@ -261,9 +261,9 @@ export default function StatisticsPage() {
                     />
                     <Tooltip
                       contentStyle={chartTooltipStyle}
-                      formatter={(value: number, name: string) => [
-                        formatMoney(value),
-                        name === 'budget' ? '预算' : '实际',
+                      formatter={(value, name) => [
+                        formatMoney(Number(value)),
+                        String(name) === 'budget' ? '预算' : '实际',
                       ]}
                     />
                     <Legend

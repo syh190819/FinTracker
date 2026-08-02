@@ -29,15 +29,22 @@
 www      A     服务器公网IP
 ```
 
-> 注意：当前 `luxiaohei.top` 解析到 GitHub Pages（185.199.111.153），改记录前确认旧的 GitHub Pages 站点不再需要，或把它挪到子域名（如 `blog.luxiaohei.top`）保留。
+> 决定（2026-08-02）：**不再保留 GitHub Pages 旧站**，当前解析（185.199.111.153）直接替换为服务器公网 IP。
 
-## 三、上传项目到服务器
+## 三、地区选择与速度
+
+- **香港**：免备案，当天可用；大陆访问延迟约 30~80ms，日常使用无感，推荐先选
+- **大陆**：延迟 10~30ms 更快，但必须先完成 ICP 备案（1~2 周）
+
+完整执行清单见 `docs/plans/2026-08-02-deployment-plan.md`。
+
+## 四、上传项目到服务器
 
 ```bash
 scp -r backend frontend deploy docs root@服务器IP:/opt/fintracker/
 ```
 
-## 四、一键部署
+## 五、一键部署
 
 ```bash
 ssh root@服务器IP
@@ -47,7 +54,7 @@ DOMAIN=luxiaohei.top bash deploy/deploy.sh
 
 脚本会完成：安装 Nginx/PostgreSQL/Node/Rust → 建库建表 → 构建前后端 → 注册 systemd 服务 → 配置 Nginx → 申请免费 HTTPS 证书。
 
-## 五、验证
+## 六、验证
 
 - 浏览器访问 https://luxiaohei.top → 注册/登录 → 记账
 - 健康检查：`curl https://luxiaohei.top/api/health`

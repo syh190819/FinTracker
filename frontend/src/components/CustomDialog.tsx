@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Modal } from 'antd';
 
 type DialogMode = 'alert' | 'confirm' | 'prompt';

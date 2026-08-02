@@ -16,7 +16,6 @@ const CategoryManager: React.FC<Props> = ({
   const [showInline, setShowInline] = useState(false);
   const [newName, setNewName] = useState('');
 
-  const summaryExcludeCategories = categories.filter(c => c.excluded).map(c => c.name);
   const categoryNames = categories.map(c => c.name);
 
   const handleAdd = () => {

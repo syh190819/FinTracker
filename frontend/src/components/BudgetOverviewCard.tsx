@@ -60,7 +60,6 @@ const BudgetOverviewCard: React.FC<Props> = ({ expenses, budgets, categories, vi
   }
 
   const totalColor = totalSpent > totalBudget ? 'var(--danger)' : totalSpent < totalBudget ? 'var(--success)' : 'var(--text)';
-  const exColor = exHousingSpent > exHousingBudget ? 'var(--danger)' : exHousingSpent < exHousingBudget ? 'var(--success)' : 'var(--text)';
 
   return (
     <div className="card budget-overview-card">
