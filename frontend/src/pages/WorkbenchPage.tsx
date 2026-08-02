@@ -5,6 +5,7 @@ import {
   CheckSquareOutlined,
   FlagOutlined,
   RightOutlined,
+  BankOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { workbenchApi } from '../services/workbenchApi';
@@ -121,9 +122,15 @@ export default function WorkbenchPage() {
                         padding: '5px 0',
                         fontSize: 13,
                         overflow: 'hidden',
+                        cursor: t.deposit_plan_id ? 'pointer' : 'default',
                       }}
+                      onClick={() => t.deposit_plan_id && navigate('/deposits')}
                     >
-                      <CheckSquareOutlined style={{ color: '#1a1a2e', flexShrink: 0 }} />
+                      {t.deposit_plan_id ? (
+                        <BankOutlined style={{ color: '#1a1a2e', flexShrink: 0 }} />
+                      ) : (
+                        <CheckSquareOutlined style={{ color: '#1a1a2e', flexShrink: 0 }} />
+                      )}
                       <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {t.title}
                       </span>
