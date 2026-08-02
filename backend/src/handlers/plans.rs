@@ -15,6 +15,7 @@ pub struct Plan {
     pub progress: i32,
     pub done_count: i64,
     pub total_count: i64,
+    pub expense_total: f64,
     pub archived: bool,
     pub archived_at: Option<chrono::NaiveDateTime>,
     pub created_at: chrono::NaiveDateTime,
@@ -42,14 +43,26 @@ pub struct UpdatePlan {
     pub archived: Option<bool>,
 }
 
-pub(crate) const PLAN_COLUMNS: &str = "p.id, p.user_id, p.name, p.deadline, \
-     CASE WHEN COUNT(t.id) FILTER (WHERE t.deleted_at IS NULL) > 0 \
-          THEN ROUND(100.0 * COUNT(t.id) FILTER (WHERE t.deleted_at IS NULL AND t.done) \
-               / COUNT(t.id) FILTER (WHERE t.deleted_at IS NULL))::int \
+pub(crate) const PLAN_SELECT_COLUMNS: &str = "p.id, p.user_id, p.name, p.deadline, \
+     CASE WHEN COUNT(ad.id) > 0 \
+          THEN ROUND(100.0 * COUNT(ad.id) FILTER (WHERE ad.done) / COUNT(ad.id))::int \
           ELSE p.progress END AS progress, \
-     COUNT(t.id) FILTER (WHERE t.deleted_at IS NULL) AS total_count, \
-     COUNT(t.id) FILTER (WHERE t.deleted_at IS NULL AND t.done) AS done_count, \
+     COUNT(ad.id) FILTER (WHERE ad.done) AS done_count, \
+     COUNT(ad.id) AS total_count, \
+     (SELECT CAST(COALESCE(SUM(e.amount), 0) AS DOUBLE PRECISION) FROM expenses e \
+      WHERE e.plan_id = p.id AND e.deleted_at IS NULL) AS expense_total, \
      p.archived, p.archived_at, p.created_at, p.updated_at, p.deleted_at";
+
+fn plan_cte() -> &'static str {
+    "WITH RECURSIVE all_todos AS ( \
+        SELECT id, plan_id, done FROM todos \
+        WHERE user_id = {u} AND deleted_at IS NULL AND plan_id IS NOT NULL \
+        UNION \
+        SELECT t.id, a.plan_id, t.done \
+        FROM todos t JOIN all_todos a ON t.parent_id = a.id \
+        WHERE t.user_id = {u} AND t.deleted_at IS NULL \
+     )"
+}
 
 fn parse_date(s: &str) -> Result<chrono::NaiveDate, StatusCode> {
     chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|_| StatusCode::UNPROCESSABLE_ENTITY)
@@ -57,9 +70,10 @@ fn parse_date(s: &str) -> Result<chrono::NaiveDate, StatusCode> {
 
 async fn fetch_plan(db: &PgPool, id: i32, user_id: i32) -> Result<Plan, StatusCode> {
     let sql = format!(
-        "SELECT {} FROM plans p LEFT JOIN todos t ON t.plan_id = p.id \
+        "{} SELECT {} FROM plans p LEFT JOIN all_todos ad ON ad.plan_id = p.id \
          WHERE p.id = $1 AND p.user_id = $2 AND p.deleted_at IS NULL GROUP BY p.id",
-        PLAN_COLUMNS
+        plan_cte().replace("{u}", "$2"),
+        PLAN_SELECT_COLUMNS
     );
     sqlx::query_as::<_, Plan>(&sql)
         .bind(id)
@@ -75,10 +89,22 @@ pub async fn list(
     axum::extract::Extension(user_id): axum::extract::Extension<i32>,
     Query(query): Query<PlanQuery>,
 ) -> Result<Json<Vec<Plan>>, StatusCode> {
-    let mut qb = QueryBuilder::new("SELECT ");
-    qb.push(PLAN_COLUMNS);
-    qb.push(" FROM plans p LEFT JOIN todos t ON t.plan_id = p.id");
-    qb.push(" WHERE p.user_id = ");
+    let mut qb = QueryBuilder::new(
+        "WITH RECURSIVE all_todos AS ( \
+            SELECT id, plan_id, done FROM todos \
+            WHERE user_id = ",
+    );
+    qb.push_bind(user_id);
+    qb.push(" AND deleted_at IS NULL AND plan_id IS NOT NULL \
+            UNION \
+            SELECT t.id, a.plan_id, t.done \
+            FROM todos t JOIN all_todos a ON t.parent_id = a.id \
+            WHERE t.user_id = ");
+    qb.push_bind(user_id);
+    qb.push(" AND t.deleted_at IS NULL \
+            ) SELECT ");
+    qb.push(PLAN_SELECT_COLUMNS);
+    qb.push(" FROM plans p LEFT JOIN all_todos ad ON ad.plan_id = p.id WHERE p.user_id = ");
     qb.push_bind(user_id);
     qb.push(" AND p.deleted_at IS NULL");
     if let Some(archived) = query.archived {
@@ -117,6 +143,7 @@ pub async fn create(
     let plan = sqlx::query_as::<_, Plan>(
         "INSERT INTO plans (user_id, name, deadline, progress) VALUES ($1, $2, $3, $4) \
          RETURNING id, user_id, name, deadline, progress, 0::BIGINT AS done_count, 0::BIGINT AS total_count, \
+                   0::DOUBLE PRECISION AS expense_total, \
                    archived, archived_at, created_at, updated_at, deleted_at",
     )
     .bind(user_id)
