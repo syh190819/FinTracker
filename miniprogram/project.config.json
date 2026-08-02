@@ -1,0 +1,45 @@
+{
+  "description": "FinTracker - 个人记账小程序",
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "setting": {
+    "bundle": false,
+    "userConfirmedBundleSwitch": false,
+    "urlCheck": true,
+    "scopeDataCheck": false,
+    "coverView": true,
+    "es6": true,
+    "postcss": true,
+    "compileHotReLoad": false,
+    "lazyloadPlaceholderEnable": false,
+    "preloadBackgroundData": false,
+    "minified": true,
+    "autoAudits": false,
+    "newFeature": false,
+    "nodeModules": false,
+    "uglifyFileName": false,
+    "uploadWithSourceMap": true,
+    "useIsolateContext": true,
+    "enhance": true,
+    "useMultiFrameRuntime": true,
+    "showShadowRootInWxmlPanel": true,
+    "packNpmManually": false,
+    "enableEngp": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "useStaticServer": true,
+    "showES6CompileOption": false,
+    "minifyWXML": true
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.7.4",
+  "appid": "YOUR_APP_ID_HERE",
+  "projectname": "FinTracker",
+  "condition": {},
+  "editorSetting": {
+    "tabIndent": "insertSpaces",
+    "tabSize": 2
+  }
+}

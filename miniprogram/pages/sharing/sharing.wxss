@@ -1,0 +1,82 @@
+.page {
+  min-height: 100vh;
+  background: #fafbfc;
+  padding-bottom: 20px;
+}
+
+.section-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+
+.invite-code-area {
+  text-align: center;
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 6px;
+}
+
+.invite-code {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a2e;
+  letter-spacing: 4px;
+  font-family: monospace;
+}
+
+.accept-card {
+  margin-top: 0;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+/* 伙伴列表 */
+.partner-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.partner-item:last-child {
+  border-bottom: none;
+}
+
+.partner-info {
+  flex: 1;
+}
+
+.partner-name {
+  display: block;
+  font-size: 14px;
+  color: #1a1a2e;
+  font-weight: 500;
+}
+
+.partner-scope {
+  display: block;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.partner-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  font-size: 13px;
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+
+.action-btn.danger {
+  color: #c0392b;
+  border: 1px solid #c0392b;
+}

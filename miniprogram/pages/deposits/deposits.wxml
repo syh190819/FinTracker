@@ -1,0 +1,54 @@
+<view class="page">
+  <!-- 存款计划列表 -->
+  <view wx:if="{{plans.length === 0 && !loading}}" class="empty-state">
+    <text class="text-light">还没有存款计划</text>
+    <text class="text-light" style="margin-top:4px;font-size:12px;">点击下方"新建计划"开始</text>
+  </view>
+
+  <view wx:for="{{plans}}" wx:for-item="plan" wx:key="id" class="card plan-card" data-id="{{plan.id}}" bindtap="openPlanDetail">
+    <view class="plan-top">
+      <text class="plan-name">{{plan.name}}</text>
+    </view>
+    <view class="plan-body">
+      <view class="plan-stat">
+        <text class="stat-label">月目标</text>
+        <text class="stat-value">¥{{plan.monthly_goal}}</text>
+      </view>
+      <view class="plan-stat">
+        <text class="stat-label">当前余额</text>
+        <text class="stat-value text-success">¥{{plan.balance}}</text>
+      </view>
+    </view>
+    <view class="progress-bar">
+      <view class="progress-fill" style="width: {{plan.goalPercent}}%"></view>
+    </view>
+    <text class="progress-text text-light">{{plan.goalPercent}}% 完成</text>
+  </view>
+
+  <!-- 新建计划按钮 -->
+  <view style="padding:16px 12px;">
+    <button class="btn-primary" bindtap="showCreateForm">新建计划</button>
+  </view>
+
+  <!-- 新建计划弹窗 -->
+  <view wx:if="{{showForm}}" class="form-overlay" bindtap="hideCreateForm">
+    <view class="form-popup" catchtap="stopPropagation">
+      <text class="form-popup-title">新建存款计划</text>
+
+      <view class="form-group">
+        <text class="form-label">计划名称</text>
+        <input class="input-field" placeholder="如：旅行基金" value="{{formName}}" bindinput="onFormNameInput" />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">月目标金额</text>
+        <input class="input-field" type="digit" placeholder="0.00" value="{{formGoal}}" bindinput="onFormGoalInput" />
+      </view>
+
+      <view class="form-actions">
+        <button class="btn-primary" bindtap="createPlan">创建</button>
+        <button class="btn-secondary" style="margin-top:8px;" bindtap="hideCreateForm">取消</button>
+      </view>
+    </view>
+  </view>
+</view>

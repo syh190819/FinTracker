@@ -1,0 +1,32 @@
+/**
+ * FinTracker 设计令牌
+ * 与 Web 端配色完全一致（#1a1a2e 深海军蓝 + 灰白极简风格）
+ * 小程序 WXSS 不支持 CSS 变量，使用 class 方式复用
+ */
+
+/* 颜色 */
+@primary: #1a1a2e;
+@accent: #3a3a5c;
+@bg: #fafbfc;
+@card-bg: #ffffff;
+@text: #1a1a2e;
+@text-light: #6b7280;
+@border: #e5e7eb;
+@danger: #c0392b;
+@success: #1e8449;
+
+/* 尺寸 */
+@radius: 6px;
+@fs-body: 13px;
+@fs-sm: 12px;
+@fs-lg: 15px;
+@fs-xl: 18px;
+
+/* 阴影 */
+@shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+
+/* 间距 */
+@pad-sm: 8px;
+@pad-md: 12px;
+@pad-lg: 16px;
+@pad-xl: 20px;

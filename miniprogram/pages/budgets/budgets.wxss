@@ -1,0 +1,84 @@
+.page {
+  min-height: 100vh;
+  background: #fafbfc;
+  padding-bottom: 20px;
+}
+
+.budget-item {
+  margin-bottom: 0;
+}
+
+.budget-header {
+  margin-bottom: 6px;
+}
+
+.budget-category {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.budget-body {
+  margin-bottom: 8px;
+}
+
+.budget-amount {
+  font-size: 13px;
+  color: #1a1a2e;
+}
+
+.budget-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+/* 编辑弹窗 */
+.form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+}
+
+.form-popup {
+  background: #ffffff;
+  border-radius: 12px 12px 0 0;
+  padding: 24px 20px 40px;
+  width: 100%;
+  box-sizing: border-box;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.form-popup-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.edit-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.edit-label {
+  font-size: 13px;
+  color: #1a1a2e;
+  min-width: 60px;
+}
+
+.edit-input {
+  flex: 1;
+}

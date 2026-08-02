@@ -1,0 +1,72 @@
+.page {
+  min-height: 100vh;
+  background: #fafbfc;
+  padding-bottom: 20px;
+}
+
+.plan-card {
+  margin-bottom: 0;
+}
+
+.plan-top {
+  margin-bottom: 12px;
+}
+
+.plan-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.plan-body {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.plan-stat {
+  flex: 1;
+}
+
+.stat-label {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+/* 弹窗覆盖层 */
+.form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+}
+
+.form-popup {
+  background: #ffffff;
+  border-radius: 12px 12px 0 0;
+  padding: 24px 20px 40px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-popup-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 20px;
+  text-align: center;
+}

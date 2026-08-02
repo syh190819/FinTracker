@@ -1,0 +1,34 @@
+<view class="page-auth">
+  <view class="auth-header">
+    <text class="auth-title">FinTracker</text>
+    <text class="auth-subtitle">个人记账工具</text>
+  </view>
+
+  <view class="auth-form card">
+    <view class="form-group">
+      <text class="form-label">用户名</text>
+      <input class="input-field" placeholder="请输入用户名" value="{{username}}" bindinput="onUsernameInput" />
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">密码</text>
+      <input class="input-field" type="password" placeholder="请输入密码" value="{{password}}" bindinput="onPasswordInput" />
+    </view>
+
+    <view class="form-actions">
+      <button class="btn-primary" loading="{{loading}}" disabled="{{loading}}" bindtap="onLogin">
+        <text wx:if="{{!loading}}">登 录</text>
+        <text wx:if="{{loading}}">登录中...</text>
+      </button>
+    </view>
+
+    <view class="auth-link">
+      <text class="text-light">还没有账号？</text>
+      <text class="link" bindtap="goRegister">立即注册</text>
+    </view>
+
+    <view wx:if="{{errorMsg}}" class="auth-error">
+      <text class="text-danger">{{errorMsg}}</text>
+    </view>
+  </view>
+</view>

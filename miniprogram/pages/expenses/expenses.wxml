@@ -1,0 +1,91 @@
+<!-- 月份选择器 -->
+<view class="month-selector">
+  <text class="month-nav" bindtap="prevMonth">‹</text>
+  <text class="month-label">{{currentMonth}}</text>
+  <text class="month-nav" bindtap="nextMonth">›</text>
+</view>
+
+<!-- 月度概览卡片 -->
+<view class="card summary-card">
+  <view class="summary-row">
+    <view class="summary-item">
+      <text class="summary-label">本月支出</text>
+      <text class="summary-amount {{monthlyTotal > 0 ? 'text-danger' : ''}}">¥{{monthlyTotal}}</text>
+    </view>
+    <view class="summary-item">
+      <text class="summary-label">本月预算</text>
+      <text class="summary-amount">¥{{monthlyBudget}}</text>
+    </view>
+  </view>
+  <view wx:if="{{monthlyBudget > 0}}" class="progress-bar">
+    <view class="progress-fill" style="width: {{budgetPercent}}%"></view>
+  </view>
+  <text wx:if="{{monthlyBudget > 0}}" class="progress-text text-light">{{budgetPercent}}% 已使用</text>
+</view>
+
+<!-- 预算是额提示 -->
+<view wx:if="{{budgetRemaining > 0}}" class="card budget-remaining">
+  <text>本月剩余预算：¥{{budgetRemaining}}</text>
+</view>
+
+<!-- 支出列表 -->
+<view class="expense-list">
+  <view wx:if="{{expenses.length === 0 && !loading}}" class="empty-state">
+    <text class="text-light">还没有支出记录</text>
+    <text class="text-light" style="margin-top:4px;font-size:12px;">点击下方 + 记一笔</text>
+  </view>
+
+  <view wx:for="{{expenses}}" wx:key="id" class="expense-item">
+    <view class="expense-left">
+      <text class="expense-category">{{item.category}}</text>
+      <text class="expense-note text-light">{{item.note || '-'}}</text>
+    </view>
+    <view class="expense-right">
+      <text class="expense-amount text-danger">-¥{{item.amount}}</text>
+      <text class="expense-date text-light" wx:if="!item.expand">{{item.date.slice(5)}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading-container">
+    <text class="text-light">加载中...</text>
+  </view>
+</view>
+
+<!-- 悬浮添加按钮 -->
+<view class="fab" bindtap="showAddForm">+</view>
+
+<!-- 添加支出弹窗 -->
+<view wx:if="{{showForm}}" class="form-overlay" bindtap="hideAddForm">
+  <view class="form-popup" catchtap="stopPropagation">
+    <text class="form-popup-title">记一笔</text>
+
+    <view class="form-group">
+      <text class="form-label">金额</text>
+      <input class="input-field" type="digit" placeholder="0.00" value="{{formAmount}}" bindinput="onFormAmountInput" />
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">品类</text>
+      <picker mode="selector" range="{{categories}}" range-key="name" value="{{formCategoryIndex}}" bindchange="onFormCategoryChange">
+        <view class="input-field picker-value">{{formCategoryName || '请选择品类'}}</view>
+      </picker>
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">日期</text>
+      <picker mode="date" value="{{formDate}}" bindchange="onFormDateChange">
+        <view class="input-field picker-value">{{formDate}}</view>
+      </picker>
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">备注</text>
+      <input class="input-field" placeholder="选填" value="{{formNote}}" bindinput="onFormNoteInput" />
+    </view>
+
+    <view class="form-actions">
+      <button class="btn-primary" bindtap="submitExpense">保存</button>
+      <button class="btn-secondary" style="margin-top:8px;" bindtap="hideAddForm">取消</button>
+    </view>
+  </view>
+</view>

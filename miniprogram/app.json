@@ -1,0 +1,49 @@
+{
+  "pages": [
+    "pages/expenses/expenses",
+    "pages/login/login",
+    "pages/register/register",
+    "pages/budgets/budgets",
+    "pages/deposits/deposits",
+    "pages/statistics/statistics",
+    "pages/sharing/sharing"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "FinTracker",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#fafbfc",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#6b7280",
+    "selectedColor": "#1a1a2e",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/expenses/expenses",
+        "text": "记账"
+      },
+      {
+        "pagePath": "pages/budgets/budgets",
+        "text": "预算"
+      },
+      {
+        "pagePath": "pages/deposits/deposits",
+        "text": "存款"
+      },
+      {
+        "pagePath": "pages/statistics/statistics",
+        "text": "统计"
+      },
+      {
+        "pagePath": "pages/sharing/sharing",
+        "text": "共享"
+      }
+    ]
+  },
+  "requiredBackgroundModes": [],
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

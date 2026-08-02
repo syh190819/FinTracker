@@ -1,0 +1,795 @@
+/* ─── CSS Variables (from finance_tracker.html) ────────────── */
+:root {
+  --bg: #fafbfc;
+  --card-bg: #ffffff;
+  --primary: #1a1a2e;
+  --accent: #3a3a5c;
+  --danger: #c0392b;
+  --success: #1e8449;
+  --text: #1a1a2e;
+  --text-light: #6b7280;
+  --border: #e5e7eb;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --radius: 6px;
+  /* Scale factor: 1.25 = 125% */
+  --S: 1.25;
+  /* Fluid spacing tokens (all multiplied by --S) */
+  --pad-card: calc(clamp(12px, 2vw, 24px) * var(--S));
+  --pad-card-mb: calc(clamp(10px, 1.5vw, 20px) * var(--S));
+  --gap-grid: calc(clamp(12px, 1.5vw, 20px) * var(--S));
+  --fs-body: clamp(13px, 1vw + 2px, 14px);
+  --fs-h2: clamp(13px, 0.7vw + 8px, 15px);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+}
+
+/* ─── App layout ─────────────────────────────────────────── */
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Fixed header ───────────────────────────────────────── */
+.fixed-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  z-index: 1000;
+  padding: 0 calc(20px * var(--S));
+}
+
+.header-inner {
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: calc(56px * var(--S));
+  padding: 0 calc(20px * var(--S));
+}
+
+.header-inner h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.5px;
+}
+
+/* ─── Tab Navigation ─────────────────────────────────────── */
+.main-nav {
+  position: fixed;
+  top: calc(56px * var(--S));
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+  z-index: 999;
+}
+
+.nav-inner {
+  margin: 0 auto;
+  padding: 0 calc(20px * var(--S));
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+}
+
+.nav-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: calc(8px * var(--S));
+}
+
+.main-nav .nav-link {
+  padding: calc(7px * var(--S)) calc(24px * var(--S));
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-light);
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  text-decoration: none;
+  user-select: none;
+}
+
+.main-nav .nav-link:hover {
+  color: var(--text);
+  border-bottom-color: #c4c8cf;
+}
+
+.main-nav .nav-link.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 600;
+}
+
+/* ─── Container ──────────────────────────────────────────── */
+.page-container {
+  margin: 0 auto;
+  padding: calc(112px * var(--S)) calc(clamp(12px, 3vw, 40px) * var(--S)) calc(40px * var(--S));
+  width: 100%;
+  flex: 1;
+}
+
+/* ─── Cards ──────────────────────────────────────────────── */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--pad-card);
+  margin-bottom: var(--pad-card-mb);
+}
+
+.card h2 {
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  margin-bottom: calc(16px * var(--S));
+  color: var(--primary);
+  letter-spacing: -0.2px;
+}
+
+/* ─── Two-column layout ──────────────────────────────────── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-grid);
+}
+
+.two-col > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.two-col .card {
+  margin-bottom: var(--pad-card-mb);
+}
+
+.two-col .card:last-child {
+  margin-bottom: 0;
+}
+
+/* Left column card fills available height */
+.two-col > div:first-child .budget-overview-card {
+  flex: 1;
+}
+
+/* ─── Forms ──────────────────────────────────────────────── */
+.form-row {
+  display: flex;
+  gap: calc(clamp(8px, 1vw, 12px) * var(--S));
+  flex-wrap: wrap;
+  margin-bottom: calc(clamp(8px, 0.8vw, 12px) * var(--S));
+}
+
+.form-group {
+  flex: 1;
+  min-width: calc(clamp(100px, 10vw, 120px) * var(--S));
+}
+
+.form-group label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-light);
+  margin-bottom: calc(5px * var(--S));
+  letter-spacing: 0.3px;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: calc(9px * var(--S)) calc(12px * var(--S));
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 13px;
+  transition: border 0.15s;
+  background: #fff;
+  color: var(--text);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* ─── Buttons ────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(9px * var(--S)) calc(18px * var(--S));
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.2px;
+  line-height: 1;
+  gap: calc(4px * var(--S));
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #2a2a42;
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background: #a93226;
+}
+
+.btn-sm {
+  padding: calc(5px * var(--S)) calc(12px * var(--S));
+  font-size: 12px;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.btn-outline:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ─── Summary Grid ───────────────────────────────────────── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(calc(120px * var(--S)), 1fr));
+  gap: calc(10px * var(--S));
+}
+
+.summary-item {
+  background: var(--bg);
+  border-radius: 4px;
+  padding: calc(12px * var(--S));
+  text-align: center;
+}
+
+.summary-item .val {
+  font-size: 18px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-item .lbl {
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: calc(2px * var(--S));
+}
+
+/* ─── Empty state ────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: calc(24px * var(--S));
+  color: var(--text-light);
+  font-size: 13px;
+}
+
+/* ─── Record list ────────────────────────────────────────── */
+.record-list {
+  max-height: calc(360px * var(--S));
+  overflow-y: auto;
+}
+
+.record-item {
+  display: flex;
+  align-items: center;
+  padding: calc(10px * var(--S)) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.record-item:hover {
+  background: var(--bg);
+}
+
+.record-item .rec-cat {
+  display: inline-block;
+  padding: calc(2px * var(--S)) calc(8px * var(--S));
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-right: calc(10px * var(--S));
+}
+
+.record-item .rec-amount {
+  font-weight: 600;
+  margin-right: calc(10px * var(--S));
+  font-variant-numeric: tabular-nums;
+}
+
+.record-item .rec-date {
+  color: var(--text-light);
+  font-size: 11px;
+  margin-right: calc(10px * var(--S));
+}
+
+.record-item .rec-note {
+  color: var(--text-light);
+  font-size: 12px;
+  flex: 1;
+}
+
+.record-item .rec-del {
+  color: var(--text-light);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 calc(6px * var(--S));
+  opacity: 0.4;
+  transition: opacity 0.15s;
+}
+
+.record-item .rec-del:hover {
+  opacity: 1;
+  color: var(--danger);
+}
+
+/* ─── Budget progress bars ──────────────────────────────── */
+.budget-progress-item {
+  padding: calc(12px * var(--S)) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.budget-progress-item:last-child {
+  border-bottom: none;
+}
+
+.budget-progress-item .bp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: calc(6px * var(--S));
+}
+
+.budget-progress-item .bp-cat {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.budget-progress-item .bp-amounts {
+  font-size: 12px;
+  color: var(--text-light);
+  text-align: right;
+  line-height: 1.4;
+}
+
+.budget-progress-item .bp-bar {
+  height: calc(6px * var(--S));
+  background: #e9ecef;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.budget-progress-item .bp-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.budget-progress-item .bp-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: calc(4px * var(--S));
+  font-size: 12px;
+}
+
+/* ─── Budget ring items ─────────────────────────────────── */
+.budget-rings {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(140px * var(--S)), 1fr));
+  gap: calc(14px * var(--S));
+}
+
+.budget-ring-item {
+  text-align: center;
+  padding: calc(18px * var(--S)) calc(10px * var(--S));
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.15s;
+}
+
+.budget-ring-item:hover {
+  border-color: #c4c8cf;
+}
+
+.budget-ring-item .ring-wrapper {
+  position: relative;
+  width: calc(80px * var(--S));
+  height: calc(80px * var(--S));
+  margin: 0 auto calc(10px * var(--S));
+}
+
+.budget-ring-item .ring-wrapper svg {
+  transform: rotate(-90deg);
+}
+
+.budget-ring-item .cat-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.budget-ring-item .ring-info {
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: calc(4px * var(--S));
+  line-height: 1.5;
+}
+
+.budget-ring-item .remaining {
+  font-weight: 600;
+  font-size: 13px;
+  display: block;
+  margin-top: calc(2px * var(--S));
+}
+
+.budget-ring-item .remaining.negative {
+  color: var(--danger);
+}
+
+.budget-ring-item .remaining.positive {
+  color: var(--success);
+}
+
+/* ─── Budget month accordion ──────────────────────────── */
+.budget-month-group {
+  margin-bottom: calc(8px * var(--S));
+}
+
+.budget-month-header {
+  display: flex;
+  align-items: center;
+  gap: calc(8px * var(--S));
+  padding: calc(8px * var(--S)) calc(12px * var(--S));
+  background: var(--bg);
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  transition: background 0.15s;
+}
+
+.budget-month-header:hover {
+  background: #eef0f2;
+}
+
+.budget-month-header .bm-arrow {
+  font-size: 10px;
+  transition: transform 0.2s;
+  color: var(--text-light);
+}
+
+.budget-month-header .bm-arrow.open {
+  transform: rotate(90deg);
+}
+
+.budget-month-body {
+  display: none;
+  padding: calc(4px * var(--S)) 0 0;
+}
+
+.budget-month-body.open {
+  display: block;
+}
+
+/* Budget bar (within accordion) */
+.budget-bar {
+  display: flex;
+  align-items: center;
+  gap: calc(10px * var(--S));
+  padding: calc(10px * var(--S)) calc(14px * var(--S));
+  background: var(--bg);
+  border-radius: 4px;
+  margin-bottom: calc(8px * var(--S));
+}
+
+.budget-bar .cat-name {
+  font-weight: 600;
+  min-width: calc(60px * var(--S));
+  font-size: 13px;
+}
+
+.budget-bar .budget-info {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+/* ─── Deposit plan ──────────────────────────────────────── */
+.deposit-plan {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: calc(20px * var(--S));
+  margin-bottom: calc(14px * var(--S));
+}
+
+.deposit-plan h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: calc(8px * var(--S));
+  color: var(--primary);
+}
+
+.deposit-plan .plan-info {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-bottom: calc(3px * var(--S));
+}
+
+.deposit-plan .plan-balance {
+  font-size: 18px;
+  font-weight: 600;
+  margin: calc(8px * var(--S)) 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.deposit-plan .plan-balance.negative {
+  color: var(--danger);
+}
+
+.deposit-usage {
+  margin-top: calc(12px * var(--S));
+}
+
+.deposit-usage h4 {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: calc(8px * var(--S));
+  color: var(--text-light);
+}
+
+.usage-item {
+  display: flex;
+  align-items: center;
+  padding: calc(7px * var(--S)) calc(10px * var(--S));
+  background: var(--bg);
+  border-radius: 4px;
+  margin-bottom: calc(4px * var(--S));
+  font-size: 12px;
+}
+
+.usage-item span {
+  margin-right: calc(10px * var(--S));
+}
+
+.usage-item .usage-amount {
+  font-weight: 600;
+  color: var(--danger);
+  font-variant-numeric: tabular-nums;
+}
+
+.usage-item .usage-del {
+  color: var(--text-light);
+  cursor: pointer;
+  margin-left: auto;
+  opacity: 0.4;
+}
+
+.usage-item .usage-del:hover {
+  opacity: 1;
+  color: var(--danger);
+}
+
+/* ─── Draggable plans ─────────────────────────────────── */
+.draggable-plan {
+  cursor: default;
+  transition: box-shadow 0.2s, opacity 0.2s;
+}
+
+.draggable-plan.dragging {
+  opacity: 0.5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.draggable-plan.drag-over {
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+/* ─── Category tags ────────────────────────────────────── */
+.cat-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(6px * var(--S));
+  margin-top: calc(8px * var(--S));
+}
+
+.cat-tag {
+  padding: calc(3px * var(--S)) calc(10px * var(--S));
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.cat-tag.selected {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* ─── Responsive ─────────────────────────────────────────── */
+/* Prevent horizontal overflow at any width */
+html, body, #root {
+  overflow-x: hidden;
+}
+input, select, textarea, button {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* 900px — two-col collapses */
+@media (max-width: 900px) {
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 768px — tablet portrait adjustments */
+@media (max-width: 768px) {
+  .budget-total-summary {
+    white-space: normal;
+    font-size: 12px;
+  }
+
+  .deposit-plans-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .budget-rings {
+    grid-template-columns: repeat(auto-fill, minmax(calc(120px * var(--S)), 1fr));
+    gap: calc(10px * var(--S));
+  }
+}
+
+/* 600px — mobile */
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+  }
+
+  .main-nav {
+    top: calc(50px * var(--S));
+  }
+
+  .main-nav .nav-link {
+    padding: calc(6px * var(--S)) calc(10px * var(--S));
+    font-size: 11px;
+  }
+
+  .nav-inner {
+    padding: 0 calc(8px * var(--S));
+    flex-wrap: wrap;
+  }
+
+  .budget-rings {
+    grid-template-columns: repeat(auto-fill, minmax(calc(100px * var(--S)), 1fr));
+    gap: calc(8px * var(--S));
+  }
+
+  .budget-ring-item {
+    padding: calc(12px * var(--S)) calc(6px * var(--S));
+  }
+
+  .budget-ring-item .ring-wrapper {
+    width: calc(60px * var(--S));
+    height: calc(60px * var(--S));
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: calc(8px * var(--S));
+  }
+
+  .deposit-plans-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .budget-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: calc(6px * var(--S));
+    padding: calc(10px * var(--S));
+  }
+
+  .budget-bar .cat-name {
+    min-width: 0;
+  }
+
+  .budget-month-header {
+    font-size: 12px;
+    padding: calc(6px * var(--S)) calc(10px * var(--S));
+    flex-wrap: wrap;
+  }
+
+  .record-item {
+    font-size: 12px;
+    padding: calc(8px * var(--S)) 0;
+    flex-wrap: wrap;
+    gap: calc(4px * var(--S));
+  }
+
+  .record-item .rec-cat {
+    font-size: 10px;
+    padding: calc(1px * var(--S)) calc(6px * var(--S));
+  }
+
+  .fixed-header .header-inner {
+    height: calc(36px * var(--S));
+    padding: 0 calc(10px * var(--S));
+  }
+
+  .fixed-header .header-inner h1 {
+    font-size: 14px;
+  }
+
+  .budget-total-summary {
+    white-space: normal;
+    font-size: 11px;
+  }
+
+  .modal .form-row {
+    flex-direction: column;
+  }
+}
+
+/* 400px — very narrow screens */
+@media (max-width: 400px) {
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: calc(6px * var(--S));
+  }
+
+  .summary-item {
+    padding: calc(8px * var(--S));
+  }
+
+  .summary-item .val {
+    font-size: 15px;
+  }
+
+  .budget-ring-item .ring-wrapper {
+    width: calc(48px * var(--S));
+    height: calc(48px * var(--S));
+  }
+}

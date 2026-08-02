@@ -1,0 +1,67 @@
+<view class="page">
+  <!-- 年份切换 -->
+  <view class="month-selector">
+    <text class="month-nav" bindtap="prevYear">&lt;</text>
+    <text class="month-label">{{currentYear}}</text>
+    <text class="month-nav" bindtap="nextYear">&gt;</text>
+  </view>
+
+  <!-- Tab 切换 -->
+  <view class="stat-tabs">
+    <view class="stat-tab {{activeTab === 'monthly' ? 'active' : ''}}" bindtap="switchTab" data-tab="monthly">月度趋势</view>
+    <view class="stat-tab {{activeTab === 'category' ? 'active' : ''}}" bindtap="switchTab" data-tab="category">分类分布</view>
+    <view class="stat-tab {{activeTab === 'budget' ? 'active' : ''}}" bindtap="switchTab" data-tab="budget">预算对比</view>
+  </view>
+
+  <!-- 月度趋势 -->
+  <view wx:if="{{activeTab === 'monthly'}}" class="card">
+    <text class="card-title">月度支出趋势</text>
+    <view class="chart-area">
+      <canvas type="2d" id="monthlyChart" style="width:100%;height:200px;"></canvas>
+    </view>
+    <view wx:if="{{monthlyData.length === 0}}" class="chart-empty">
+      <text class="text-light">暂无数据</text>
+    </view>
+  </view>
+
+  <!-- 分类分布 -->
+  <view wx:if="{{activeTab === 'category'}}" class="card">
+    <text class="card-title">分类支出分布</text>
+    <view wx:for="{{categoryData}}" wx:for-item="c" wx:key="category" class="cat-row">
+      <view class="cat-left">
+        <text class="cat-name">{{c.category}}</text>
+      </view>
+      <view class="cat-bar-bg">
+        <view class="cat-bar-fill" style="width: {{c.percent}}%"></view>
+      </view>
+      <view class="cat-right">
+        <text class="cat-amount">¥{{c.total}}</text>
+        <text class="cat-percent text-light">{{c.percent}}%</text>
+      </view>
+    </view>
+    <view wx:if="{{categoryData.length === 0}}" class="chart-empty">
+      <text class="text-light">暂无数据</text>
+    </view>
+  </view>
+
+  <!-- 预算对比 -->
+  <view wx:if="{{activeTab === 'budget'}}" class="card">
+    <text class="card-title">预算 vs 实际支出</text>
+    <view wx:for="{{budgetData}}" wx:for-item="b" wx:key="category" class="budget-compare-row">
+      <text class="budget-compare-cat">{{b.category}}</text>
+      <view class="budget-compare-bars">
+        <view class="compare-bar-group">
+          <view class="compare-bar budget-bar" style="width: 100%"></view>
+          <text class="compare-label text-light">预算 ¥{{b.budget}}</text>
+        </view>
+        <view class="compare-bar-group">
+          <view class="compare-bar actual-bar" style="width: {{b.actualPercent}}%"></view>
+          <text class="compare-label" style="color: {{b.actual > b.budget ? '#c0392b' : '#1e8449'}}">实际 ¥{{b.actual}}</text>
+        </view>
+      </view>
+    </view>
+    <view wx:if="{{budgetData.length === 0}}" class="chart-empty">
+      <text class="text-light">暂无数据</text>
+    </view>
+  </view>
+</view>

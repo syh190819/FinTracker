@@ -1,0 +1,54 @@
+<view class="page">
+  <!-- 月份切换 -->
+  <view class="month-selector">
+    <text class="month-nav" bindtap="prevMonth">‹</text>
+    <text class="month-label">{{currentMonth}}</text>
+    <text class="month-nav" bindtap="nextMonth">›</text>
+  </view>
+
+  <!-- 预算列表 -->
+  <view wx:if="{{budgets.length === 0 && !loading}}" class="empty-state">
+    <text class="text-light">本月还没有设置预算</text>
+    <text class="text-light" style="margin-top:4px;font-size:12px;">点击下方"编辑预算"添加</text>
+  </view>
+
+  <view wx:for="{{budgets}}" wx:for-item="b" wx:key="id" class="card budget-item">
+    <view class="budget-header">
+      <text class="budget-category">{{b.category}}</text>
+    </view>
+    <view class="budget-body">
+      <text class="budget-amount">已用 ¥{{b.spent || '0.00'}} / ¥{{b.amount}}</text>
+    </view>
+    <view class="progress-bar">
+      <view class="progress-fill" style="width: {{b.percent || 0}}%"></view>
+    </view>
+    <view class="budget-footer">
+      <text class="text-light">{{b.percent || 0}}%</text>
+      <text class="{{b.remaining >= 0 ? 'text-success' : 'text-danger'}}">
+        {{b.remaining >= 0 ? '剩余 ¥' + b.remaining : '超支 ¥' + Math.abs(b.remaining)}}
+      </text>
+    </view>
+  </view>
+
+  <!-- 编辑预算按钮 -->
+  <view style="padding:16px 12px;">
+    <button class="btn-primary" bindtap="showEditForm">编辑预算</button>
+  </view>
+
+  <!-- 编辑预算弹窗 -->
+  <view wx:if="{{showForm}}" class="form-overlay" bindtap="hideEditForm">
+    <view class="form-popup" catchtap="stopPropagation">
+      <text class="form-popup-title">编辑预算 - {{currentMonth}}</text>
+
+      <view wx:for="{{editItems}}" wx:for-item="item" wx:for-index="idx" wx:key="*this" class="edit-row">
+        <text class="edit-label">{{item.category}}</text>
+        <input class="input-field edit-input" type="digit" placeholder="预算金额" value="{{item.amount}}" data-idx="{{idx}}" bindinput="onEditAmountInput" />
+      </view>
+
+      <view class="form-actions">
+        <button class="btn-primary" bindtap="saveBudgets">保存</button>
+        <button class="btn-secondary" style="margin-top:8px;" bindtap="hideEditForm">取消</button>
+      </view>
+    </view>
+  </view>
+</view>

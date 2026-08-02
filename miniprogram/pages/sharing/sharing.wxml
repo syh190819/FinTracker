@@ -1,0 +1,53 @@
+<view class="page">
+  <!-- 邀请区 -->
+  <view class="card invite-card">
+    <text class="section-title">邀请共享伙伴</text>
+    <text class="text-light" style="display:block;margin-bottom:12px;">
+      生成邀请码，对方在"共享"页输入即可建立共享关系
+    </text>
+
+    <view wx:if="{{inviteCode}}" class="invite-code-area">
+      <text class="invite-code">{{inviteCode}}</text>
+      <button class="btn-secondary" style="margin-top:8px;" bindtap="copyInviteCode">复制邀请码</button>
+    </view>
+
+    <view wx:if="!inviteCode && !inviteLoading">
+      <button class="btn-primary" bindtap="generateInvite">生成邀请码</button>
+    </view>
+
+    <view wx:if="{{inviteLoading}}" class="loading-container">
+      <text class="text-light">生成中...</text>
+    </view>
+  </view>
+
+  <!-- 接受邀请 -->
+  <view class="card accept-card">
+    <text class="section-title">接受邀请</text>
+    <view class="form-group">
+      <input class="input-field" placeholder="输入对方的邀请码" value="{{acceptCode}}" bindinput="onAcceptCodeInput" />
+    </view>
+    <button class="btn-primary" bindtap="acceptInvite">确认加入</button>
+  </view>
+
+  <!-- 共享伙伴列表 -->
+  <view class="card" wx:if="{{partners.length > 0}}">
+    <text class="section-title">共享伙伴 ({{partners.length}})</text>
+
+    <view wx:for="{{partners}}" wx:for-item="p" wx:key="id" class="partner-item">
+      <view class="partner-info">
+        <text class="partner-name">{{p.partner_name}}</text>
+        <text class="partner-scope text-light">
+          共享: {{p.scopeLabel || '支出/预算/存款'}}
+        </text>
+      </view>
+      <view class="partner-actions">
+        <text class="action-btn danger" bindtap="removePartner" data-id="{{p.id}}" data-name="{{p.partner_name}}">解除</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{partners.length === 0 && !loading}}" class="empty-state">
+    <text class="text-light">暂无共享伙伴</text>
+  </view>
+</view>

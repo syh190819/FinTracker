@@ -1,0 +1,39 @@
+<view class="page-auth">
+  <view class="auth-header">
+    <text class="auth-title">创建账号</text>
+    <text class="auth-subtitle">加入 FinTracker</text>
+  </view>
+
+  <view class="auth-form card">
+    <view class="form-group">
+      <text class="form-label">用户名</text>
+      <input class="input-field" placeholder="请设置用户名" value="{{username}}" bindinput="onUsernameInput" />
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">密码</text>
+      <input class="input-field" type="password" placeholder="请设置密码" value="{{password}}" bindinput="onPasswordInput" />
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">确认密码</text>
+      <input class="input-field" type="password" placeholder="请再次输入密码" value="{{confirmPassword}}" bindinput="onConfirmPasswordInput" />
+    </view>
+
+    <view class="form-actions">
+      <button class="btn-primary" loading="{{loading}}" disabled="{{loading}}" bindtap="onRegister">
+        <text wx:if="{{!loading}}">注 册</text>
+        <text wx:if="{{loading}}">注册中...</text>
+      </button>
+    </view>
+
+    <view class="auth-link">
+      <text class="text-light">已有账号？</text>
+      <text class="link" bindtap="goLogin">返回登录</text>
+    </view>
+
+    <view wx:if="{{errorMsg}}" class="auth-error">
+      <text class="text-danger">{{errorMsg}}</text>
+    </view>
+  </view>
+</view>

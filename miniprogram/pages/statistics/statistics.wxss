@@ -1,0 +1,141 @@
+.page {
+  min-height: 100vh;
+  background: #fafbfc;
+}
+
+/* Tab 切换 */
+.stat-tabs {
+  display: flex;
+  background: #ffffff;
+  margin: 0 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.stat-tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  font-size: 13px;
+  color: #6b7280;
+  transition: all 0.2s;
+}
+
+.stat-tab.active {
+  background: #1a1a2e;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* 图表区 */
+.card-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 16px;
+}
+
+.chart-area {
+  min-height: 200px;
+}
+
+.chart-empty {
+  text-align: center;
+  padding: 40px 0;
+}
+
+/* 分类分布 */
+.cat-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 8px;
+}
+
+.cat-left {
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.cat-name {
+  font-size: 13px;
+  color: #1a1a2e;
+}
+
+.cat-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cat-bar-fill {
+  height: 100%;
+  background: #1a1a2e;
+  border-radius: 4px;
+}
+
+.cat-right {
+  width: 90px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.cat-amount {
+  display: block;
+  font-size: 13px;
+  color: #1a1a2e;
+  font-weight: 500;
+}
+
+.cat-percent {
+  display: block;
+  font-size: 11px;
+}
+
+/* 预算对比 */
+.budget-compare-row {
+  margin-bottom: 16px;
+}
+
+.budget-compare-cat {
+  display: block;
+  font-size: 13px;
+  color: #1a1a2e;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.budget-compare-bars {
+  padding-left: 8px;
+}
+
+.compare-bar-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  gap: 8px;
+}
+
+.compare-bar {
+  height: 12px;
+  border-radius: 3px;
+  min-width: 4px;
+}
+
+.budget-bar {
+  background: #e5e7eb;
+}
+
+.actual-bar {
+  background: #1a1a2e;
+}
+
+.compare-label {
+  font-size: 11px;
+  white-space: nowrap;
+  min-width: 100px;
+}
