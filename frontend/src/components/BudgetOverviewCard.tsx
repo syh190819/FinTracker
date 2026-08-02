@@ -1,17 +1,18 @@
 import { useMemo } from 'react';
 import { daysInMonth, formatMoney } from '../utils/helpers';
-import type { Expense, Budget, Category } from '../types/api';
+import type { Expense, Budget, Category, Plan } from '../types/api';
 
 interface Props {
   expenses: Expense[];
   budgets: Budget[];
   categories: Category[];
+  plans: Plan[];
   viewMonth: string;
   onNavigate: (dir: number) => void;
   isCurrent: boolean;
 }
 
-const BudgetOverviewCard: React.FC<Props> = ({ expenses, budgets, categories, viewMonth, onNavigate, isCurrent }) => {
+const BudgetOverviewCard: React.FC<Props> = ({ expenses, budgets, categories, plans, viewMonth, onNavigate, isCurrent }) => {
   const monthBudgets = useMemo(() => {
     const filtered = budgets.filter(b => b.month === viewMonth);
     if (filtered.length === 0) return null;
@@ -41,6 +42,15 @@ const BudgetOverviewCard: React.FC<Props> = ({ expenses, budgets, categories, vi
     });
 
   const exclCats = categories.filter(c => c.excluded).map(c => c.name);
+  const planBudgets = plans.filter(p => p.plan_types.includes('budget') && p.expense_limit > 0);
+
+  // 计划关联支出（按 plan_id 统计）
+  const monthSpentByPlan: Record<number, number> = {};
+  expenses
+    .filter(e => e.date.startsWith(viewMonth) && e.plan_id != null)
+    .forEach(e => {
+      monthSpentByPlan[e.plan_id!] = (monthSpentByPlan[e.plan_id!] || 0) + e.amount;
+    });
 
   // Totals
   let totalBudget = 0;
@@ -57,6 +67,10 @@ const BudgetOverviewCard: React.FC<Props> = ({ expenses, budgets, categories, vi
         exHousingSpent += monthSpent[cat] || 0;
       }
     }
+  }
+  for (const p of planBudgets) {
+    totalBudget += p.expense_limit;
+    totalSpent += monthSpentByPlan[p.id] || 0;
   }
 
   const totalColor = totalSpent > totalBudget ? 'var(--danger)' : totalSpent < totalBudget ? 'var(--success)' : 'var(--text)';
@@ -105,10 +119,11 @@ const BudgetOverviewCard: React.FC<Props> = ({ expenses, budgets, categories, vi
       </div>
 
       <div style={{ flex: 1 }}>
-        {!monthBudgets || Object.keys(monthBudgets).length === 0 ? (
+        {(!monthBudgets || Object.keys(monthBudgets).length === 0) && planBudgets.length === 0 ? (
           <div className="empty-state">当前月份暂无预算设置，请先在「预算管理」中设置</div>
         ) : (
-          Object.entries(monthBudgets).map(([cat, b]) => {
+          <>
+          {Object.entries(monthBudgets || {}).map(([cat, b]) => {
             const days = daysInMonth(viewMonth);
             const s = (b.splitByDay && isCurrent) ? (todaySpent[cat] || 0) : (monthSpent[cat] || 0);
             const limit = (b.splitByDay && isCurrent) ? (b.amount / days) : b.amount;
@@ -148,7 +163,35 @@ const BudgetOverviewCard: React.FC<Props> = ({ expenses, budgets, categories, vi
                 </div>
               </div>
             );
-          })
+          })}
+          {planBudgets.map((p) => {
+            const spent = monthSpentByPlan[p.id] || 0;
+            const limit = p.expense_limit;
+            const remaining = limit - spent;
+            const overBudget = remaining < 0;
+            const pct = Math.min((spent / limit) * 100, 100);
+            const barColor = remaining < 0 ? '#c0392b' : remaining === 0 ? '#1a1a2e' : '#27ae60';
+            return (
+              <div className="budget-progress-item" key={`plan-${p.id}`}>
+                <div className="bp-header">
+                  <span className="bp-cat">{p.name}（计划）</span>
+                  <span className="bp-amounts">
+                    已花 {formatMoney(spent)} / 本月 {formatMoney(limit)}
+                  </span>
+                </div>
+                <div className="bp-bar">
+                  <div className="bp-bar-fill" style={{ width: `${pct}%`, background: barColor }} />
+                </div>
+                <div className="bp-footer">
+                  <span style={{ color: overBudget ? 'var(--danger)' : 'var(--text-light)' }}>
+                    {overBudget ? '超支' : '剩余'} {formatMoney(Math.abs(remaining))}
+                  </span>
+                  <span style={{ fontWeight: 600, color: barColor }}>{Math.round(pct)}%</span>
+                </div>
+              </div>
+            );
+          })}
+          </>
         )}
       </div>
     </div>

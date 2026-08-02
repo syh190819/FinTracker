@@ -13,6 +13,7 @@ pub struct WorkbenchSummary {
     pub month_income: f64,
     pub month_income_personal: f64,
     pub month_income_shared: f64,
+    pub month_income_goal: f64,
     pub month_budget: f64,
     pub today_todo_count: i64,
     pub open_todo_count: i64,
@@ -94,12 +95,27 @@ pub async fn summary(
     };
     let month_income = month_income_personal + month_income_shared;
 
+    // 本月预算总额 = 品类预算 + 进行中预算计划的支出上限（联动）
     let month_budget: f64 = sqlx::query_scalar(
-        "SELECT CAST(COALESCE(SUM(amount), 0) AS DOUBLE PRECISION) FROM budgets \
-         WHERE user_id = $1 AND deleted_at IS NULL AND month = $2",
+        "SELECT CAST(
+            COALESCE((SELECT SUM(amount) FROM budgets WHERE user_id = $1 AND deleted_at IS NULL AND month = $2), 0)
+            + COALESCE((SELECT SUM(expense_limit) FROM plans
+                        WHERE user_id = $1 AND deleted_at IS NULL AND archived = false
+                          AND plan_types @> ARRAY['budget']), 0)
+         AS DOUBLE PRECISION)",
     )
     .bind(user_id)
     .bind(&month)
+    .fetch_one(&db)
+    .await
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let month_income_goal: f64 = sqlx::query_scalar(
+        "SELECT CAST(COALESCE(SUM(income_goal), 0) AS DOUBLE PRECISION) FROM plans \
+         WHERE user_id = $1 AND deleted_at IS NULL AND archived = false \
+           AND plan_types @> ARRAY['budget']",
+    )
+    .bind(user_id)
     .fetch_one(&db)
     .await
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -168,6 +184,7 @@ pub async fn summary(
         month_income,
         month_income_personal,
         month_income_shared,
+        month_income_goal,
         month_budget,
         today_todo_count,
         open_todo_count,

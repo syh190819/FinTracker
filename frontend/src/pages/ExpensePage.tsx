@@ -160,6 +160,7 @@ const ExpensePage: React.FC = () => {
             expenses={expenses}
             budgets={budgets}
             categories={categories}
+            plans={plans}
             viewMonth={viewMonth}
             onNavigate={handleNavigate}
             isCurrent={isCurrent}

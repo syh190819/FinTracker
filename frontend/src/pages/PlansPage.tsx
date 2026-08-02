@@ -375,7 +375,7 @@ export default function PlansPage() {
             value={types}
             onChange={(v) => setTypes(v as string[])}
             options={PLAN_TYPES.map((t) => ({
-              label: `${PLAN_TYPE_CONFIG[t].label}（${PLAN_TYPE_CONFIG[t].desc}）`,
+              label: PLAN_TYPE_CONFIG[t].label,
               value: t,
             }))}
           />
@@ -384,43 +384,50 @@ export default function PlansPage() {
           <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>截止日期</div>
           <DatePicker style={{ width: '100%' }} value={deadline} onChange={(d) => setDeadline(d)} allowClear />
         </div>
-        {types.includes('budget') && (
-          <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 140 }}>
-              <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>收入目标 (¥)</div>
-              <Input inputMode="decimal" value={incomeGoal ? String(incomeGoal) : ''} onChange={(e) => setIncomeGoal(parseFloat(e.target.value) || 0)} placeholder="0" />
+        {PLAN_TYPES.map((t) => types.includes(t) && (
+          <div key={t} style={{ border: '1px solid #e8e8e8', borderRadius: 8, padding: 12, marginBottom: 16 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: '#1a1a2e' }}>
+              {PLAN_TYPE_CONFIG[t].icon} {PLAN_TYPE_CONFIG[t].label}设置
             </div>
-            <div style={{ flex: 1, minWidth: 140 }}>
-              <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>支出上限 (¥)</div>
-              <Input inputMode="decimal" value={expenseLimit ? String(expenseLimit) : ''} onChange={(e) => setExpenseLimit(parseFloat(e.target.value) || 0)} placeholder="0" />
-            </div>
-          </div>
-        )}
-        {types.includes('deposit') && (
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <div style={{ flex: 1, minWidth: 140 }}>
-                <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>月目标 (¥)</div>
-                <Input inputMode="decimal" value={monthlyGoal ? String(monthlyGoal) : ''} onChange={(e) => setMonthlyGoal(parseFloat(e.target.value) || 0)} placeholder="0" />
+            {t === 'budget' && (
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: 140 }}>
+                  <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>收入目标 (¥)</div>
+                  <Input inputMode="decimal" value={incomeGoal ? String(incomeGoal) : ''} onChange={(e) => setIncomeGoal(parseFloat(e.target.value) || 0)} placeholder="0" />
+                </div>
+                <div style={{ flex: 1, minWidth: 140 }}>
+                  <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>支出上限 (¥)</div>
+                  <Input inputMode="decimal" value={expenseLimit ? String(expenseLimit) : ''} onChange={(e) => setExpenseLimit(parseFloat(e.target.value) || 0)} placeholder="0" />
+                </div>
               </div>
-              <div style={{ flex: 1, minWidth: 140 }}>
-                <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>每月提醒日</div>
-                <InputNumber min={1} max={28} value={autoTodoDay} onChange={(v) => setAutoTodoDay(v ?? 28)} style={{ width: '100%' }} />
-              </div>
-            </div>
-            <div style={{ marginTop: 10 }}>
-              <Checkbox checked={autoTodo} onChange={(e) => setAutoTodo(e.target.checked)}>
-                自动生成每月存钱待办
-              </Checkbox>
-            </div>
+            )}
+            {t === 'deposit' && (
+              <>
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, minWidth: 140 }}>
+                    <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>月目标 (¥)</div>
+                    <Input inputMode="decimal" value={monthlyGoal ? String(monthlyGoal) : ''} onChange={(e) => setMonthlyGoal(parseFloat(e.target.value) || 0)} placeholder="0" />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 140 }}>
+                    <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>每月提醒日</div>
+                    <InputNumber min={1} max={28} value={autoTodoDay} onChange={(v) => setAutoTodoDay(v ?? 28)} style={{ width: '100%' }} />
+                  </div>
+                </div>
+                <div style={{ marginTop: 10 }}>
+                  <Checkbox checked={autoTodo} onChange={(e) => setAutoTodo(e.target.checked)}>
+                    自动生成每月存钱待办
+                  </Checkbox>
+                </div>
+              </>
+            )}
+            {t === 'todo' && (
+              <>
+                <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>初始进度（有关联待办后自动计算）</div>
+                <InputNumber min={0} max={100} value={progress} onChange={(v) => setProgress(v ?? 0)} style={{ width: '100%' }} />
+              </>
+            )}
           </div>
-        )}
-        {types.includes('todo') && (
-          <div>
-            <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>初始进度（有关联待办后自动计算）</div>
-            <InputNumber min={0} max={100} value={progress} onChange={(v) => setProgress(v ?? 0)} style={{ width: '100%' }} />
-          </div>
-        )}
+        ))}
       </Modal>
 
       {/* 存入/取出弹窗 */}

@@ -253,6 +253,7 @@ export interface WorkbenchSummary {
   month_income: number;
   month_income_personal: number;
   month_income_shared: number;
+  month_income_goal: number;
   month_budget: number;
   today_todo_count: number;
   open_todo_count: number;

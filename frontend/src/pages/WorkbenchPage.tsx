@@ -135,6 +135,11 @@ export default function WorkbenchPage() {
                 <div style={{ fontSize: 13, color: '#999' }}>
                   个人 {formatMoney(summary.month_income_personal)} · 共享 {formatMoney(summary.month_income_shared)}
                 </div>
+                {summary.month_income_goal > 0 && (
+                  <div style={{ fontSize: 13, color: '#1e8449', marginTop: 4 }}>
+                    目标 {formatMoney(summary.month_income_goal)}
+                  </div>
+                )}
               </Card>
             </Col>
 
@@ -149,7 +154,7 @@ export default function WorkbenchPage() {
                   个人 {formatMoney(summary.month_personal)} · 共享 {formatMoney(summary.month_shared)}
                 </div>
                 <div style={{ fontSize: 13, color: '#999', marginBottom: 8 }}>
-                  个人支出 / 预算 {formatMoney(summary.month_budget)}
+                  个人支出 / 预算（含计划）{formatMoney(summary.month_budget)}
                 </div>
                 <Progress percent={budgetPercent} strokeColor={budgetPercent > 100 ? '#c0392b' : '#1a1a2e'} size="small" />
               </Card>

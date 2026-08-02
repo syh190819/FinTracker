@@ -1,20 +1,24 @@
 import { useState, useEffect } from 'react';
 import { Button, Modal, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import BudgetList from '../components/BudgetList';
 import CategoryManager from '../components/CategoryManager';
 import { budgetApi } from '../services/budgetApi';
 import { categoryApi } from '../services/categoryApi';
+import { planApi } from '../services/planApi';
 import { currentMonthStr, daysInMonth, formatMoney } from '../utils/helpers';
 import { useDialog } from '../components/CustomDialog';
 import type { Budget, Category } from '../types/api';
 
 const BudgetPage: React.FC = () => {
+  const navigate = useNavigate();
   const { showDialog, dialog } = useDialog();
   const [budgetModalOpen, setBudgetModalOpen] = useState(false);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [budgetPlans, setBudgetPlans] = useState<any[]>([]);
   const [budgetMonth, setBudgetMonth] = useState(currentMonthStr());
   const [budgetCategory, setBudgetCategory] = useState('');
   const [budgetAmount, setBudgetAmount] = useState('');
@@ -41,6 +45,7 @@ const BudgetPage: React.FC = () => {
   useEffect(() => {
     fetchBudgets();
     fetchCategories();
+    planApi.list({ type: 'budget', archived: false }).then(setBudgetPlans).catch(() => {});
   }, []);
 
   const categoryNames = categories.map(c => c.name);
@@ -177,6 +182,22 @@ const BudgetPage: React.FC = () => {
           品类管理
         </Button>
       </div>
+
+      {/* 预算计划目标（与计划页联动） */}
+      {budgetPlans.length > 0 && (
+        <div className="card" style={{ marginBottom: 16 }}>
+          <h2>预算计划目标</h2>
+          {budgetPlans.map(p => (
+            <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f5f5f5', flexWrap: 'wrap', gap: 8 }}>
+              <span style={{ fontWeight: 600 }}>{p.name}</span>
+              <span style={{ fontSize: 13, color: '#666' }}>
+                收入目标 {formatMoney(p.income_goal)} · 支出上限 {formatMoney(p.expense_limit)}
+              </span>
+              <Button size="small" onClick={() => navigate('/plans')}>去调整</Button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Budget list */}
       <BudgetList
