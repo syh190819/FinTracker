@@ -226,7 +226,7 @@ export default function MainLayout() {
               key={tab.path}
               type={isActive(tab.path) ? 'primary' : 'text'}
               icon={tab.icon}
-              onClick={() => navigate(tab.path)}
+              onClick={() => { navigate(tab.path); setCollapsed(true); }}
               style={{
                 justifyContent: collapsed ? 'center' : 'flex-start',
                 height: 42,
