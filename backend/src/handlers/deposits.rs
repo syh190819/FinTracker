@@ -15,6 +15,8 @@ pub struct DepositPlan {
     pub category: String,
     pub monthly_goal: f64,
     pub sort_order: i32,
+    pub auto_todo_enabled: bool,
+    pub auto_todo_day: i32,
     pub deleted_at: Option<chrono::NaiveDateTime>,
 }
 
@@ -45,6 +47,8 @@ pub struct CreatePlan {
     pub name: String,
     pub category: Option<String>,
     pub monthly_goal: Option<f64>,
+    pub auto_todo_enabled: Option<bool>,
+    pub auto_todo_day: Option<i32>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -53,6 +57,8 @@ pub struct UpdatePlan {
     pub category: Option<String>,
     pub monthly_goal: Option<f64>,
     pub sort_order: Option<i32>,
+    pub auto_todo_enabled: Option<bool>,
+    pub auto_todo_day: Option<i32>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -72,7 +78,7 @@ pub async fn list_plans(
 ) -> Result<Json<Vec<PlanWithBalance>>, StatusCode> {
     let plans = sqlx::query_as::<_, DepositPlan>(
         "SELECT id, user_id, name, category, CAST(monthly_goal AS DOUBLE PRECISION) as monthly_goal, \
-                sort_order, deleted_at \
+                sort_order, auto_todo_enabled, auto_todo_day, deleted_at \
          FROM deposit_plans WHERE user_id = $1 AND deleted_at IS NULL ORDER BY sort_order, id",
     )
     .bind(user_id)
@@ -108,17 +114,24 @@ pub async fn create_plan(
 
     let category = req.category.unwrap_or_default();
     let monthly_goal = req.monthly_goal.unwrap_or(0.0);
+    let auto_todo_enabled = req.auto_todo_enabled.unwrap_or(false);
+    let auto_todo_day = req.auto_todo_day.unwrap_or(28);
+    if !(1..=28).contains(&auto_todo_day) {
+        return Err(StatusCode::UNPROCESSABLE_ENTITY);
+    }
 
     let plan = sqlx::query_as::<_, DepositPlan>(
-        "INSERT INTO deposit_plans (user_id, name, category, monthly_goal) \
-         VALUES ($1, $2, $3, $4) \
+        "INSERT INTO deposit_plans (user_id, name, category, monthly_goal, auto_todo_enabled, auto_todo_day) \
+         VALUES ($1, $2, $3, $4, $5, $6) \
          RETURNING id, user_id, name, category, CAST(monthly_goal AS DOUBLE PRECISION) as monthly_goal, \
-                   sort_order, deleted_at",
+                   sort_order, auto_todo_enabled, auto_todo_day, deleted_at",
     )
     .bind(user_id)
     .bind(&req.name)
     .bind(&category)
     .bind(monthly_goal)
+    .bind(auto_todo_enabled)
+    .bind(auto_todo_day)
     .fetch_one(&db)
     .await
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -134,7 +147,7 @@ pub async fn update_plan(
 ) -> Result<Json<DepositPlan>, StatusCode> {
     let existing = sqlx::query_as::<_, DepositPlan>(
         "SELECT id, user_id, name, category, CAST(monthly_goal AS DOUBLE PRECISION) as monthly_goal, \
-                sort_order, deleted_at \
+                sort_order, auto_todo_enabled, auto_todo_day, deleted_at \
          FROM deposit_plans WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL",
     )
     .bind(id)
@@ -148,17 +161,25 @@ pub async fn update_plan(
     let category = req.category.unwrap_or(existing.category);
     let monthly_goal = req.monthly_goal.unwrap_or(existing.monthly_goal);
     let sort_order = req.sort_order.unwrap_or(existing.sort_order);
+    let auto_todo_enabled = req.auto_todo_enabled.unwrap_or(existing.auto_todo_enabled);
+    let auto_todo_day = req.auto_todo_day.unwrap_or(existing.auto_todo_day);
+    if !(1..=28).contains(&auto_todo_day) {
+        return Err(StatusCode::UNPROCESSABLE_ENTITY);
+    }
 
     let plan = sqlx::query_as::<_, DepositPlan>(
-        "UPDATE deposit_plans SET name = $1, category = $2, monthly_goal = $3, sort_order = $4 \
-         WHERE id = $5 \
+        "UPDATE deposit_plans SET name = $1, category = $2, monthly_goal = $3, sort_order = $4, \
+                auto_todo_enabled = $5, auto_todo_day = $6 \
+         WHERE id = $7 \
          RETURNING id, user_id, name, category, CAST(monthly_goal AS DOUBLE PRECISION) as monthly_goal, \
-                   sort_order, deleted_at",
+                   sort_order, auto_todo_enabled, auto_todo_day, deleted_at",
     )
     .bind(&name)
     .bind(&category)
     .bind(monthly_goal)
     .bind(sort_order)
+    .bind(auto_todo_enabled)
+    .bind(auto_todo_day)
     .bind(id)
     .fetch_one(&db)
     .await
