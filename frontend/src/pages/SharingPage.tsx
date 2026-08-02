@@ -109,7 +109,7 @@ export default function SharingPage() {
   const containerStyle: React.CSSProperties = {
     maxWidth: 1000,
     margin: '0 auto',
-    padding: 24,
+    padding: 'clamp(12px, 3vw, 24px)',
   };
 
   const rowStyle: React.CSSProperties = {
@@ -120,7 +120,7 @@ export default function SharingPage() {
 
   const cardStyle: React.CSSProperties = {
     flex: 1,
-    minWidth: 320,
+    minWidth: 'min(320px, 100%)',
     background: '#fff',
     borderRadius: 12,
     boxShadow: '0 2px 8px rgba(0,0,0,0.08)',

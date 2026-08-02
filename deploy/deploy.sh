@@ -27,7 +27,10 @@ fi
 if ! sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'" | grep -q 1; then
   sudo -u postgres createdb -O "$APP_USER" "$DB_NAME"
 fi
-sudo -u postgres psql -d "$DB_NAME" -f "$APP_DIR/backend/migrations/001_initial.sql" >/dev/null
+for f in "$APP_DIR/backend/migrations/"*.sql; do
+  echo "  applying $(basename "$f")"
+  sudo -u postgres psql -d "$DB_NAME" -f "$f" >/dev/null
+done
 
 echo "==> [4/7] 安装 Node.js 24 + Rust（用于构建）"
 if ! command -v node &>/dev/null || [ "$(node -v | cut -d. -f1 | tr -d v)" -lt 24 ]; then

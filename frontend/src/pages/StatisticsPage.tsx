@@ -22,7 +22,7 @@ const COLORS = ['#1a1a2e', '#27ae60', '#c0392b', '#3498db', '#f39c12', '#9b59b6'
 
 const styles: Record<string, React.CSSProperties> = {
   page: {
-    padding: 24,
+    padding: 'clamp(12px, 3vw, 24px)',
     maxWidth: 1100,
     margin: '0 auto',
   },
@@ -209,7 +209,7 @@ export default function StatisticsPage() {
           {/* Category Distribution + Budget vs Actual */}
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
             {categoryData.length > 0 && (
-              <div className="card" style={{ ...styles.card, flex: 1, minWidth: 320 }}>
+              <div className="card" style={{ ...styles.card, flex: 1, minWidth: 'min(320px, 100%)' }}>
                 <h3 style={styles.cardTitle}>分类支出分布</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
@@ -246,7 +246,7 @@ export default function StatisticsPage() {
             )}
 
             {budgetData.length > 0 && (
-              <div className="card" style={{ ...styles.card, flex: 1, minWidth: 320 }}>
+              <div className="card" style={{ ...styles.card, flex: 1, minWidth: 'min(320px, 100%)' }}>
                 <h3 style={styles.cardTitle}>预算 vs 实际</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={budgetData}>
