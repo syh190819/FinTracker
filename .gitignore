@@ -10,7 +10,7 @@ frontend/dist/
 backend/.env
 
 # Runtime logs
-*.log
+*.log*
 
 # Editor / tool memory
 .workbuddy/
