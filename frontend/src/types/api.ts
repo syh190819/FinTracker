@@ -184,3 +184,71 @@ export interface BudgetVsActual {
   budget: number;
   actual: number;
 }
+
+// === Todos ===
+export interface Todo {
+  id: number;
+  user_id: number;
+  title: string;
+  due_date: string | null;
+  done: boolean;
+  plan_id: number | null;
+  plan_name: string | null;
+  created_at: string;
+  updated_at: string | null;
+  deleted_at: string | null;
+}
+
+export interface CreateTodo {
+  title: string;
+  due_date?: string | null;
+  plan_id?: number | null;
+  done?: boolean;
+}
+
+export interface UpdateTodo {
+  title?: string;
+  due_date?: string | null;
+  plan_id?: number | null;
+  done?: boolean;
+}
+
+// === Plans ===
+export interface Plan {
+  id: number;
+  user_id: number;
+  name: string;
+  deadline: string | null;
+  progress: number;
+  done_count: number;
+  total_count: number;
+  archived: boolean;
+  archived_at: string | null;
+  created_at: string;
+  updated_at: string | null;
+  deleted_at: string | null;
+}
+
+export interface CreatePlan {
+  name: string;
+  deadline?: string | null;
+  progress?: number;
+}
+
+export interface UpdatePlan {
+  name?: string;
+  deadline?: string | null;
+  progress?: number;
+  archived?: boolean;
+}
+
+// === Workbench ===
+export interface WorkbenchSummary {
+  month_total: number;
+  month_budget: number;
+  today_todo_count: number;
+  open_todo_count: number;
+  active_plan_count: number;
+  recent_todos: Todo[];
+  active_plans: Plan[];
+}
