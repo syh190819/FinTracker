@@ -58,6 +58,20 @@ const HistoryPanel: React.FC<Props> = ({ expenses, onDelete, showDialog }) => {
                     -{formatMoney(r.amount)}
                   </span>
                   <span className="rec-date">{r.date}</span>
+                  {r.plan_name && (
+                    <span
+                      style={{
+                        fontSize: 11,
+                        background: '#f0f0f0',
+                        borderRadius: 3,
+                        padding: '1px 6px',
+                        color: '#666',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {r.plan_name}
+                    </span>
+                  )}
                   <span className="rec-note">{r.note || ''}</span>
                   <span className="rec-del" onClick={() => handleDelete(r.id)}>&times;</span>
                 </div>

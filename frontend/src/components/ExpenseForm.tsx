@@ -1,24 +1,34 @@
 import { useState, useEffect } from 'react';
 import { formatMoney, todayStr } from '../utils/helpers';
 import type { ShowDialogFn } from './CustomDialog';
+import type { Plan } from '../types/api';
 
 interface Props {
   categoryNames: string[];
-  onAdd: (amount: number, category: string, date: string, note: string) => void;
+  plans: Plan[];
+  initialPlanId?: number;
+  initialNote?: string;
+  onAdd: (amount: number, category: string, date: string, note: string, planId?: number | null) => void;
   todayTotal: number;
   todayCount: number;
   showDialog: ShowDialogFn;
 }
 
-const ExpenseForm: React.FC<Props> = ({ categoryNames, onAdd, todayTotal, todayCount, showDialog }) => {
+const ExpenseForm: React.FC<Props> = ({
+  categoryNames, plans, initialPlanId, initialNote,
+  onAdd, todayTotal, todayCount, showDialog,
+}) => {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState(todayStr());
   const [note, setNote] = useState('');
+  const [planId, setPlanId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     setDate(todayStr());
-  }, []);
+    if (initialNote) setNote(initialNote);
+    if (initialPlanId !== undefined) setPlanId(initialPlanId);
+  }, [initialNote, initialPlanId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,9 +41,10 @@ const ExpenseForm: React.FC<Props> = ({ categoryNames, onAdd, todayTotal, todayC
       showDialog({ mode: 'alert', title: '提示', message: '请选择品类' });
       return;
     }
-    onAdd(amt, category, date, note);
+    onAdd(amt, category, date, note, planId);
     setAmount('');
     setNote('');
+    setPlanId(undefined);
   };
 
   return (
@@ -86,6 +97,20 @@ const ExpenseForm: React.FC<Props> = ({ categoryNames, onAdd, todayTotal, todayC
               value={date}
               onChange={e => setDate(e.target.value)}
             />
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label>关联计划（可选）</label>
+            <select
+              value={planId ?? ''}
+              onChange={e => setPlanId(e.target.value ? Number(e.target.value) : undefined)}
+            >
+              <option value="">不关联</option>
+              {plans.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
           </div>
         </div>
         <div className="form-row">

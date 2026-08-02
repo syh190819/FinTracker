@@ -8,6 +8,7 @@ import { currentMonthStr, todayStr } from '../utils/helpers';
 import { expenseApi } from '../services/expenseApi';
 import { categoryApi } from '../services/categoryApi';
 import { budgetApi } from '../services/budgetApi';
+import { planApi } from '../services/planApi';
 import type { Expense, Category, Budget } from '../types/api';
 
 const ExpensePage: React.FC = () => {
@@ -19,6 +20,17 @@ const ExpensePage: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [plans, setPlans] = useState<Awaited<ReturnType<typeof planApi.list>>>([]);
+
+  // 从 URL 读取快捷记账参数（计划页"记一笔"跳转）
+  const [initialPlanId, setInitialPlanId] = useState<number | undefined>(() => {
+    const p = new URLSearchParams(window.location.search).get('plan_id');
+    return p ? Number(p) : undefined;
+  });
+  const [initialNote, setInitialNote] = useState<string | undefined>(() => {
+    const n = new URLSearchParams(window.location.search).get('note');
+    return n || undefined;
+  });
 
   const fetchExpenses = useCallback(async () => {
     try {
@@ -47,24 +59,45 @@ const ExpensePage: React.FC = () => {
     }
   }, []);
 
+  const fetchPlans = useCallback(async () => {
+    try {
+      setPlans(await planApi.list({ archived: false }));
+    } catch {
+      message.error('获取计划失败');
+    }
+  }, []);
+
   // Initial load
   useEffect(() => {
     fetchExpenses();
     fetchCategories();
-  }, [fetchExpenses, fetchCategories]);
+    fetchPlans();
+  }, [fetchExpenses, fetchCategories, fetchPlans]);
 
   // Reload budgets when viewMonth changes
   useEffect(() => {
     fetchBudgets(viewMonth);
   }, [viewMonth, fetchBudgets]);
 
-  const handleAddExpense = useCallback(async (amount: number, category: string, date: string, note: string) => {
+  const handleAddExpense = useCallback(async (
+    amount: number,
+    category: string,
+    date: string,
+    note: string,
+    planId?: number | null,
+  ) => {
     try {
-      await expenseApi.create({ amount, category, date, note });
+      await expenseApi.create({ amount, category, date, note, plan_id: planId ?? null });
       message.success('记录成功');
       fetchExpenses();
       if (viewMonth === currentMonthStr()) {
         fetchBudgets(viewMonth);
+      }
+      // 清除快捷记账参数
+      if (window.location.search) {
+        window.history.replaceState(null, '', window.location.pathname);
+        setInitialPlanId(undefined);
+        setInitialNote(undefined);
       }
     } catch {
       message.error('记录失败');
@@ -119,6 +152,9 @@ const ExpensePage: React.FC = () => {
         <div ref={rightRef} style={{ display: 'flex', flexDirection: 'column' }}>
           <ExpenseForm
             categoryNames={categoryNames}
+            plans={plans}
+            initialPlanId={initialPlanId}
+            initialNote={initialNote}
             onAdd={handleAddExpense}
             todayTotal={todayTotal}
             todayCount={todayCount}
