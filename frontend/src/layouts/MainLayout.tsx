@@ -15,6 +15,7 @@ import {
   LeftOutlined,
   RightOutlined,
   ArrowLeftOutlined,
+  MenuOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { todayStr } from '../utils/helpers';
@@ -258,6 +259,13 @@ export default function MainLayout() {
             minHeight: 46,
           }}
         >
+          <Button
+            type="text"
+            icon={collapsed ? <MenuOutlined /> : <LeftOutlined />}
+            onClick={() => setCollapsed((v) => !v)}
+            title={collapsed ? '展开导航' : '收起导航'}
+            style={{ marginRight: 4 }}
+          />
           {!isMobile && (
             <>
               <Button size="small" type="text" onClick={handleCopy}>复制</Button>
