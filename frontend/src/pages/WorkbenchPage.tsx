@@ -190,7 +190,7 @@ export default function WorkbenchPage() {
                   type="link"
                   size="small"
                   style={{ padding: 0, marginTop: 6 }}
-                  onClick={() => navigate('/plans')}
+                  onClick={() => navigate('/todos')}
                 >
                   查看全部 <RightOutlined />
                 </Button>
@@ -219,7 +219,7 @@ export default function WorkbenchPage() {
               <Button
                 icon={<FlagOutlined />}
                 style={quickActionStyle}
-                onClick={() => navigate('/plans')}
+                onClick={() => navigate('/todos?newPlan=1')}
               >
                 新建计划
               </Button>

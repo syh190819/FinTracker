@@ -12,7 +12,6 @@ import {
   BarChartOutlined,
   TeamOutlined,
   CheckSquareOutlined,
-  FlagOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { todayStr } from '../utils/helpers';
@@ -27,7 +26,6 @@ const NAV_TABS = [
   { path: '/statistics', label: '统计', icon: <BarChartOutlined /> },
   { path: '/sharing', label: '共享', icon: <TeamOutlined /> },
   { path: '/todos', label: '待办', icon: <CheckSquareOutlined /> },
-  { path: '/plans', label: '计划', icon: <FlagOutlined /> },
 ];
 
 export default function MainLayout() {
