@@ -254,18 +254,18 @@ export default function PlansPage() {
         <span style={{ fontSize: 13 }}>
           收入 {formatMoney(plan.income_total)} / 目标 {formatMoney(plan.income_goal)}
         </span>
-        <span style={{ display: 'flex', gap: 6 }}>
-          <Button size="small" onClick={() => navigate(`/expenses?type=income&plan_id=${plan.id}&note=${encodeURIComponent(plan.name)}`)}>
-            收入
-          </Button>
-          <Button size="small" onClick={() => navigate(`/expenses?type=expense&plan_id=${plan.id}&note=${encodeURIComponent(plan.name)}`)}>
-            支出
-          </Button>
-        </span>
+        <Button size="small" onClick={() => navigate(`/expenses?type=income&plan_id=${plan.id}&note=${encodeURIComponent(plan.name)}`)}>
+          记收入
+        </Button>
       </div>
       <Progress percent={plan.income_goal > 0 ? Math.min(100, Math.round((plan.income_total / plan.income_goal) * 100)) : 0} size="small" strokeColor="#1e8449" />
-      <div style={{ fontSize: 13, margin: '6px 0 4px' }}>
-        支出 {formatMoney(plan.expense_total)} / 上限 {formatMoney(plan.expense_limit)}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '6px 0 4px' }}>
+        <span style={{ fontSize: 13 }}>
+          支出 {formatMoney(plan.expense_total)} / 上限 {formatMoney(plan.expense_limit)}
+        </span>
+        <Button size="small" onClick={() => navigate(`/expenses?type=expense&plan_id=${plan.id}&note=${encodeURIComponent(plan.name)}`)}>
+          记支出
+        </Button>
       </div>
       <Progress percent={plan.expense_limit > 0 ? Math.min(100, Math.round((plan.expense_total / plan.expense_limit) * 100)) : 0} size="small" strokeColor={plan.expense_limit > 0 && plan.expense_total > plan.expense_limit ? '#c0392b' : '#3498db'} />
     </div>
