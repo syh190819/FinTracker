@@ -10,7 +10,7 @@ interface Props {
 }
 
 const HistoryPanel: React.FC<Props> = ({ expenses, onDelete, showDialog }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [date, setDate] = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

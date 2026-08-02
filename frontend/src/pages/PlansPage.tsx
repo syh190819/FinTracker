@@ -23,6 +23,7 @@ import dayjs, { type Dayjs } from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { planApi } from '../services/planApi';
 import { todoApi } from '../services/todoApi';
+import { expenseApi } from '../services/expenseApi';
 import type { Plan, Todo } from '../types/api';
 import { PLAN_TYPE_CONFIG, PLAN_TYPES } from '../utils/planTypes';
 import { buildTodoTree, type TodoNode } from '../utils/todoTree';
@@ -52,6 +53,10 @@ export default function PlansPage() {
 
   const [txns, setTxns] = useState<Record<number, any[]>>({});
   const [trees, setTrees] = useState<Record<number, Todo[]>>({});
+  const [records, setRecords] = useState<Record<number, any[]>>({});
+  const [taskModal, setTaskModal] = useState<Plan | null>(null);
+  const [txnListModal, setTxnListModal] = useState<Plan | null>(null);
+  const [recordModal, setRecordModal] = useState<Plan | null>(null);
   const [txnModal, setTxnModal] = useState<{ plan: Plan; type: 'deposit' | 'withdraw' } | null>(null);
   const [txnAmount, setTxnAmount] = useState('');
   const [txnDate, setTxnDate] = useState(dayjs().format('YYYY-MM-DD'));
@@ -125,26 +130,43 @@ export default function PlansPage() {
     }
   };
 
-  const loadTxns = async (plan: Plan) => {
-    if (txns[plan.id]) {
-      setTxns((prev) => { const n = { ...prev }; delete n[plan.id]; return n; });
-      return;
+  const openTaskModal = async (plan: Plan) => {
+    if (!trees[plan.id]) {
+      try {
+        const data = await todoApi.list({ plan_id: plan.id });
+        setTrees((prev) => ({ ...prev, [plan.id]: data }));
+      } catch {
+        message.error('加载任务失败');
+        return;
+      }
     }
-    try {
-      const data = await planApi.listTransactions(plan.id);
-      setTxns((prev) => ({ ...prev, [plan.id]: data }));
-    } catch { /* ignore */ }
+    setTaskModal(plan);
   };
 
-  const loadTree = async (plan: Plan) => {
-    if (trees[plan.id]) {
-      setTrees((prev) => { const n = { ...prev }; delete n[plan.id]; return n; });
-      return;
+  const openTxnList = async (plan: Plan) => {
+    if (!txns[plan.id]) {
+      try {
+        const data = await planApi.listTransactions(plan.id);
+        setTxns((prev) => ({ ...prev, [plan.id]: data }));
+      } catch {
+        message.error('加载流水失败');
+        return;
+      }
     }
-    try {
-      const data = await todoApi.list({ plan_id: plan.id });
-      setTrees((prev) => ({ ...prev, [plan.id]: data }));
-    } catch { message.error('加载任务失败'); }
+    setTxnListModal(plan);
+  };
+
+  const openRecords = async (plan: Plan) => {
+    if (!records[plan.id]) {
+      try {
+        const data = await expenseApi.list({ plan_id: plan.id });
+        setRecords((prev) => ({ ...prev, [plan.id]: data }));
+      } catch {
+        message.error('加载记录失败');
+        return;
+      }
+    }
+    setRecordModal(plan);
   };
 
   const submitTxn = async () => {
@@ -226,25 +248,9 @@ export default function PlansPage() {
       </div>
       <Progress percent={plan.monthly_goal > 0 ? Math.min(100, Math.round((plan.balance / plan.monthly_goal) * 100)) : 0} size="small" strokeColor="#1a1a2e" />
       {plan.auto_todo_enabled && <div style={{ fontSize: 12, color: '#999' }}>每月 {plan.auto_todo_day} 号自动生成存钱待办</div>}
-      <Button type="text" size="small" style={{ padding: 0, marginTop: 4 }} onClick={() => loadTxns(plan)}>
-        {txns[plan.id] ? '收起流水' : '查看流水'}
+      <Button type="text" size="small" style={{ padding: 0, marginTop: 4 }} onClick={() => openTxnList(plan)}>
+        展示流水
       </Button>
-      {txns[plan.id] && (
-        <div style={{ marginTop: 6 }}>
-          {txns[plan.id].length === 0 ? (
-            <div style={{ fontSize: 12, color: '#aaa' }}>暂无流水</div>
-          ) : (
-            txns[plan.id].slice(0, 10).map((t: any) => (
-              <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0', borderBottom: '1px solid #f5f5f5' }}>
-                <span>{t.date} {t.type === 'deposit' ? '存入' : '取出'} {t.source}</span>
-                <span style={{ color: t.type === 'deposit' ? '#1e8449' : '#c0392b' }}>
-                  {t.type === 'deposit' ? '+' : '-'}{formatMoney(t.amount)}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
-      )}
     </div>
   );
 
@@ -268,6 +274,11 @@ export default function PlansPage() {
         </Button>
       </div>
       <Progress percent={plan.expense_limit > 0 ? Math.min(100, Math.round((plan.expense_total / plan.expense_limit) * 100)) : 0} size="small" strokeColor={plan.expense_limit > 0 && plan.expense_total > plan.expense_limit ? '#c0392b' : '#3498db'} />
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 6 }}>
+        <Button type="text" size="small" style={{ padding: 0 }} onClick={() => openRecords(plan)}>
+          查看记录
+        </Button>
+      </div>
     </div>
   );
 
@@ -282,18 +293,9 @@ export default function PlansPage() {
         </Button>
       </div>
       <Progress percent={plan.progress} size="small" strokeColor="#1a1a2e" />
-      <Button type="text" size="small" style={{ padding: 0, marginTop: 4 }} onClick={() => loadTree(plan)}>
-        {trees[plan.id] ? '收起任务' : '展开任务'}
+      <Button type="text" size="small" style={{ padding: 0, marginTop: 4 }} onClick={() => openTaskModal(plan)}>
+        查看任务
       </Button>
-      {trees[plan.id] && (
-        <div style={{ marginTop: 6 }}>
-          {buildTodoTree(trees[plan.id]).length === 0 ? (
-            <div style={{ fontSize: 12, color: '#aaa' }}>暂无任务</div>
-          ) : (
-            renderTree(buildTodoTree(trees[plan.id]))
-          )}
-        </div>
-      )}
     </div>
   );
 
@@ -453,6 +455,78 @@ export default function PlansPage() {
           <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>来源（可选）</div>
           <Input value={txnSource} onChange={(e) => setTxnSource(e.target.value)} placeholder="如：工资" />
         </div>
+      </Modal>
+
+      {/* 查看任务弹窗 */}
+      <Modal
+        title={taskModal ? `${taskModal.name} - 任务` : ''}
+        open={!!taskModal}
+        onCancel={() => setTaskModal(null)}
+        footer={null}
+        destroyOnHidden
+        width={520}
+      >
+        {taskModal && (
+          trees[taskModal.id] && buildTodoTree(trees[taskModal.id]).length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 30, color: '#aaa' }}>暂无任务</div>
+          ) : taskModal ? (
+            renderTree(buildTodoTree(trees[taskModal.id] || []))
+          ) : null
+        )}
+      </Modal>
+
+      {/* 展示流水弹窗 */}
+      <Modal
+        title={txnListModal ? `${txnListModal.name} - 流水` : ''}
+        open={!!txnListModal}
+        onCancel={() => setTxnListModal(null)}
+        footer={null}
+        destroyOnHidden
+      >
+        {txnListModal && (
+          (txns[txnListModal.id] || []).length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 30, color: '#aaa' }}>暂无流水</div>
+          ) : (
+            (txns[txnListModal.id] || []).map((t: any) => (
+              <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '6px 0', borderBottom: '1px solid #f5f5f5' }}>
+                <span>{t.date} {t.type === 'deposit' ? '存入' : '取出'} {t.source} {t.note}</span>
+                <span style={{ color: t.type === 'deposit' ? '#1e8449' : '#c0392b' }}>
+                  {t.type === 'deposit' ? '+' : '-'}{formatMoney(t.amount)}
+                </span>
+              </div>
+            ))
+          )
+        )}
+      </Modal>
+
+      {/* 查看记录弹窗（收支） */}
+      <Modal
+        title={recordModal ? `${recordModal.name} - 收支记录` : ''}
+        open={!!recordModal}
+        onCancel={() => setRecordModal(null)}
+        footer={null}
+        destroyOnHidden
+        width={520}
+      >
+        {recordModal && (
+          (records[recordModal.id] || []).length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 30, color: '#aaa' }}>暂无收支记录</div>
+          ) : (
+            (records[recordModal.id] || []).map((r: any) => (
+              <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, fontSize: 13, padding: '6px 0', borderBottom: '1px solid #f5f5f5' }}>
+                <span>
+                  <Tag color={r.type === 'income' ? 'green' : 'red'} style={{ marginInlineEnd: 6 }}>
+                    {r.type === 'income' ? '收入' : '支出'}
+                  </Tag>
+                  {r.date} {r.category}
+                </span>
+                <span style={{ color: r.type === 'income' ? '#1e8449' : '#c0392b' }}>
+                  {r.type === 'income' ? '+' : '-'}{formatMoney(r.amount)}
+                </span>
+              </div>
+            ))
+          )
+        )}
       </Modal>
     </div>
   );

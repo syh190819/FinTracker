@@ -31,6 +31,7 @@ pub struct ExpenseQuery {
     pub month: Option<String>,
     pub category: Option<String>,
     pub r#type: Option<String>,
+    pub plan_id: Option<i32>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -101,6 +102,9 @@ pub async fn list(
             return Err(StatusCode::UNPROCESSABLE_ENTITY);
         }
         sql.push_str(&format!(" AND e.type = '{}'", t));
+    }
+    if let Some(pid) = query.plan_id {
+        sql.push_str(&format!(" AND e.plan_id = {}", pid));
     }
 
     sql.push_str(" ORDER BY e.date DESC, e.created_at DESC");

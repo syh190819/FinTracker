@@ -59,6 +59,8 @@ export interface ExpenseQuery {
   date?: string;
   month?: string;
   category?: string;
+  type?: string;
+  plan_id?: number;
 }
 
 export interface CreateExpense {

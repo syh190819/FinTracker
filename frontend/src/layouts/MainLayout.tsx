@@ -15,7 +15,10 @@ import {
   LeftOutlined,
   RightOutlined,
   ArrowLeftOutlined,
-  MenuOutlined,
+  CopyOutlined,
+  FileExcelOutlined,
+  UploadOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { todayStr } from '../utils/helpers';
@@ -251,6 +254,45 @@ export default function MainLayout() {
             </Button>
           ))}
         </div>
+        {/* 导入导出 */}
+        <div style={{ padding: 8, borderTop: '1px solid #f0f0f0', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <Button
+            type="text"
+            icon={<CopyOutlined />}
+            onClick={handleCopy}
+            style={{ justifyContent: collapsed ? 'center' : 'flex-start', height: 40, borderRadius: 8 }}
+            title="复制数据"
+          >
+            {!collapsed && '复制数据'}
+          </Button>
+          <Button
+            type="text"
+            icon={<UploadOutlined />}
+            onClick={() => { setPasteText(''); setPasteOpen(true); }}
+            style={{ justifyContent: collapsed ? 'center' : 'flex-start', height: 40, borderRadius: 8 }}
+            title="粘贴导入"
+          >
+            {!collapsed && '粘贴导入'}
+          </Button>
+          <Button
+            type="text"
+            icon={<FileExcelOutlined />}
+            onClick={() => fileInputRef.current?.click()}
+            style={{ justifyContent: collapsed ? 'center' : 'flex-start', height: 40, borderRadius: 8 }}
+            title="导入Excel"
+          >
+            {!collapsed && '导入Excel'}
+          </Button>
+          <Button
+            type="text"
+            icon={<DownloadOutlined />}
+            onClick={handleExportExcel}
+            style={{ justifyContent: collapsed ? 'center' : 'flex-start', height: 40, borderRadius: 8 }}
+            title="导出Excel"
+          >
+            {!collapsed && '导出Excel'}
+          </Button>
+        </div>
         <div style={{ padding: 8, borderTop: '1px solid #f0f0f0' }}>
           <Button
             type="text"
@@ -279,23 +321,8 @@ export default function MainLayout() {
             minHeight: 46,
           }}
         >
-          <Button
-            type="text"
-            icon={collapsed ? <MenuOutlined /> : <LeftOutlined />}
-            onClick={() => setCollapsed((v) => !v)}
-            title={collapsed ? '展开导航' : '收起导航'}
-            style={{ marginRight: 4 }}
-          />
-          {!isMobile && (
-            <>
-              <Button size="small" type="text" onClick={handleCopy}>复制</Button>
-              <Button size="small" type="text" onClick={() => { setPasteText(''); setPasteOpen(true); }}>粘贴导入</Button>
-              <Button size="small" type="text" onClick={() => fileInputRef.current?.click()}>导入Excel</Button>
-              <Button size="small" type="text" onClick={handleExportExcel}>导出Excel</Button>
-              <input ref={fileInputRef} type="file" accept=".xlsx,.xls" style={{ display: 'none' }} onChange={handleFileImport} />
-            </>
-          )}
           <div style={{ flex: 1 }} />
+          <input ref={fileInputRef} type="file" accept=".xlsx,.xls" style={{ display: 'none' }} onChange={handleFileImport} />
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
             <Button type="text" icon={<UserOutlined />}>
               {!isMobile && user?.username}
