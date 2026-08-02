@@ -183,6 +183,18 @@ export default function MainLayout() {
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      {/* 展开时的遮罩：点击外部自动收起 */}
+      {!collapsed && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 999,
+            background: 'rgba(0,0,0,0.10)',
+          }}
+          onClick={() => setCollapsed(true)}
+        />
+      )}
       {/* 左侧常驻导航 */}
       <div
         style={{
