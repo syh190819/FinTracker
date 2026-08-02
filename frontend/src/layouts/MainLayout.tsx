@@ -182,16 +182,17 @@ export default function MainLayout() {
     path === '/' ? location.pathname === '/' : location.pathname === path;
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       {/* 左侧常驻导航 */}
       <div
         style={{
           width: collapsed ? 64 : 200,
+          height: '100vh',
+          flexShrink: 0,
           borderRight: '1px solid #f0f0f0',
           background: '#fff',
           display: 'flex',
           flexDirection: 'column',
-          flexShrink: 0,
           transition: 'width .2s',
         }}
       >
@@ -245,7 +246,7 @@ export default function MainLayout() {
       </div>
 
       {/* 主区域 */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh' }}>
         {/* 顶栏 */}
         <div
           style={{
