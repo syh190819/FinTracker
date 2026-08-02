@@ -1,0 +1,18 @@
+# FinTracker 后端 systemd 服务
+# 放置到: /etc/systemd/system/fintracker.service
+
+[Unit]
+Description=FinTracker Backend (Rust Axum)
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=fintracker
+WorkingDirectory=/opt/fintracker/backend
+ExecStart=/opt/fintracker/backend/fintracker-backend
+Restart=on-failure
+RestartSec=5
+EnvironmentFile=/opt/fintracker/backend/.env
+
+[Install]
+WantedBy=multi-user.target
