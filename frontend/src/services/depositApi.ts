@@ -3,8 +3,8 @@ import type {
   PlanWithBalance,
   DepositPlan,
   DepositTransaction,
-  CreatePlan,
-  UpdatePlan,
+  CreateDepositPlan,
+  UpdateDepositPlan,
   CreateTransaction,
 } from '../types/api';
 
@@ -12,10 +12,10 @@ export const depositApi = {
   listPlans: () =>
     apiClient.get<PlanWithBalance[]>('/deposit-plans').then((r) => r.data),
 
-  createPlan: (data: CreatePlan) =>
+  createPlan: (data: CreateDepositPlan) =>
     apiClient.post<DepositPlan>('/deposit-plans', data).then((r) => r.data),
 
-  updatePlan: (id: number, data: UpdatePlan) =>
+  updatePlan: (id: number, data: UpdateDepositPlan) =>
     apiClient.put<DepositPlan>(`/deposit-plans/${id}`, data).then((r) => r.data),
 
   deletePlan: (id: number) => apiClient.delete(`/deposit-plans/${id}`),

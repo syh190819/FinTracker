@@ -50,6 +50,8 @@ export interface Expense {
   updated_by: number | null;
   updated_at: string | null;
   deleted_at: string | null;
+  plan_id: number | null;
+  plan_name: string | null;
 }
 
 export interface ExpenseQuery {
@@ -63,6 +65,7 @@ export interface CreateExpense {
   category: string;
   date: string;
   note?: string;
+  plan_id?: number | null;
 }
 
 export interface UpdateExpense {
@@ -70,6 +73,7 @@ export interface UpdateExpense {
   category?: string;
   date?: string;
   note?: string;
+  plan_id?: number | null;
 }
 
 // === Budgets ===
@@ -103,6 +107,8 @@ export interface DepositPlan {
   category: string;
   monthly_goal: number;
   sort_order: number;
+  auto_todo_enabled: boolean;
+  auto_todo_day: number;
   deleted_at: string | null;
 }
 
@@ -126,17 +132,21 @@ export interface DepositTransaction {
   deleted_at: string | null;
 }
 
-export interface CreatePlan {
+export interface CreateDepositPlan {
   name: string;
   category?: string;
   monthly_goal?: number;
+  auto_todo_enabled?: boolean;
+  auto_todo_day?: number;
 }
 
-export interface UpdatePlan {
+export interface UpdateDepositPlan {
   name?: string;
   category?: string;
   monthly_goal?: number;
   sort_order?: number;
+  auto_todo_enabled?: boolean;
+  auto_todo_day?: number;
 }
 
 export interface CreateTransaction {
@@ -194,6 +204,8 @@ export interface Todo {
   done: boolean;
   plan_id: number | null;
   plan_name: string | null;
+  parent_id: number | null;
+  deposit_plan_id: number | null;
   created_at: string;
   updated_at: string | null;
   deleted_at: string | null;
@@ -204,6 +216,7 @@ export interface CreateTodo {
   due_date?: string | null;
   plan_id?: number | null;
   done?: boolean;
+  parent_id?: number | null;
 }
 
 export interface UpdateTodo {
@@ -211,6 +224,7 @@ export interface UpdateTodo {
   due_date?: string | null;
   plan_id?: number | null;
   done?: boolean;
+  parent_id?: number | null;
 }
 
 // === Plans ===
@@ -222,6 +236,7 @@ export interface Plan {
   progress: number;
   done_count: number;
   total_count: number;
+  expense_total: number;
   archived: boolean;
   archived_at: string | null;
   created_at: string;
