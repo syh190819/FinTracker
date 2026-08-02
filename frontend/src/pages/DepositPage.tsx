@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Modal, Input, Form, message } from 'antd';
+import { Modal, Input, Form, InputNumber, Switch, message } from 'antd';
 import DepositPlanCard from '../components/DepositPlanCard';
 import { useDialog } from '../components/CustomDialog';
 import { todayStr } from '../utils/helpers';
@@ -70,6 +70,8 @@ const DepositPage: React.FC = () => {
       name: p.plan.name,
       category: p.plan.category,
       monthlyGoal: p.plan.monthly_goal,
+      autoTodoEnabled: p.plan.auto_todo_enabled,
+      autoTodoDay: p.plan.auto_todo_day,
     });
     setPlanModalOpen(true);
   };
@@ -83,6 +85,8 @@ const DepositPage: React.FC = () => {
           name: values.name,
           category: values.category,
           monthly_goal: monthlyGoal,
+          auto_todo_enabled: values.autoTodoEnabled ?? false,
+          auto_todo_day: values.autoTodoDay ?? 28,
         });
         message.success('计划已更新');
       } else {
@@ -90,6 +94,8 @@ const DepositPage: React.FC = () => {
           name: values.name,
           category: values.category,
           monthly_goal: monthlyGoal,
+          auto_todo_enabled: values.autoTodoEnabled ?? false,
+          auto_todo_day: values.autoTodoDay ?? 28,
         });
         message.success('计划已创建');
       }
@@ -257,7 +263,12 @@ const DepositPage: React.FC = () => {
         destroyOnClose
         centered
       >
-        <Form form={planForm} layout="vertical" style={{ marginTop: 16 }}>
+        <Form
+          form={planForm}
+          layout="vertical"
+          style={{ marginTop: 16 }}
+          initialValues={{ autoTodoEnabled: false, autoTodoDay: 28 }}
+        >
           <Form.Item label="存款名称" name="name" rules={[{ required: true, message: '请输入存款名称' }]}>
             <Input placeholder="如：旅行基金" />
           </Form.Item>
@@ -266,6 +277,27 @@ const DepositPage: React.FC = () => {
           </Form.Item>
           <Form.Item label="每月期望存款 (¥)" name="monthlyGoal" rules={[{ required: true, message: '请输入每月期望存款' }]}>
             <Input type="number" step="0.01" min="0" placeholder="0.00" />
+          </Form.Item>
+          <Form.Item
+            label="自动生成每月存钱待办"
+            name="autoTodoEnabled"
+            valuePropName="checked"
+            tooltip="开启后，每月提醒日会自动出现一条存钱待办"
+          >
+            <Switch />
+          </Form.Item>
+          <Form.Item noStyle shouldUpdate={(prev, cur) => prev.autoTodoEnabled !== cur.autoTodoEnabled}>
+            {({ getFieldValue }) =>
+              getFieldValue('autoTodoEnabled') ? (
+                <Form.Item
+                  label="每月提醒日"
+                  name="autoTodoDay"
+                  rules={[{ required: true, message: '请选择提醒日' }]}
+                >
+                  <InputNumber min={1} max={28} style={{ width: '100%' }} placeholder="1-28 号" />
+                </Form.Item>
+              ) : null
+            }
           </Form.Item>
         </Form>
       </Modal>

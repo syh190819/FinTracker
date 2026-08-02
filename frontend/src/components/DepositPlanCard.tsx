@@ -48,6 +48,21 @@ const DepositPlanCard: React.FC<Props> = ({
             &#x283F;
           </span>
           <h3 style={{ marginBottom: 0, fontSize: 14 }}>{p.name}</h3>
+          {p.auto_todo_enabled && (
+            <span
+              style={{
+                fontSize: 10,
+                background: '#f0f0f0',
+                color: '#666',
+                borderRadius: 3,
+                padding: '1px 6px',
+                whiteSpace: 'nowrap',
+              }}
+              title={`每月 ${p.auto_todo_day} 号自动生成存钱待办`}
+            >
+              每月待办提醒
+            </span>
+          )}
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
           <button className="btn btn-sm btn-outline" style={{ padding: '3px 10px', fontSize: 11 }} onClick={() => onEdit(p.id)}>
