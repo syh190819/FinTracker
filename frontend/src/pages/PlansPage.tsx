@@ -488,7 +488,7 @@ export default function PlansPage() {
         okText="保存"
         cancelText="取消"
         confirmLoading={saving}
-        destroyOnClose
+        destroyOnHidden
       >
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>名称 *</div>

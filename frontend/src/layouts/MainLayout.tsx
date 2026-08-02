@@ -269,7 +269,7 @@ export default function MainLayout() {
       <Drawer
         title="FinTracker"
         placement="left"
-        width={264}
+        size={264}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         styles={{ body: { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 12 } }}
@@ -286,7 +286,7 @@ export default function MainLayout() {
         onCancel={() => setPasteOpen(false)}
         okText="导入并覆盖"
         cancelText="取消"
-        destroyOnClose
+        destroyOnHidden
         centered
       >
         <p style={{ fontSize: 12, color: '#999', marginBottom: 10 }}>

@@ -367,7 +367,7 @@ export default function TodosPage() {
         okText="保存"
         cancelText="取消"
         confirmLoading={saving}
-        destroyOnClose
+        destroyOnHidden
       >
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>内容 *</div>

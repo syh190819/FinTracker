@@ -260,7 +260,7 @@ const DepositPage: React.FC = () => {
         onCancel={() => setPlanModalOpen(false)}
         okText={editingPlanId ? '保存修改' : '创建存款计划'}
         cancelText="取消"
-        destroyOnClose
+        destroyOnHidden
         centered
       >
         <Form
@@ -310,7 +310,7 @@ const DepositPage: React.FC = () => {
         onCancel={() => setRecordModalOpen(false)}
         okText="确认记录"
         cancelText="取消"
-        destroyOnClose
+        destroyOnHidden
         centered
       >
         <div style={{ marginTop: 16 }}>
