@@ -194,10 +194,9 @@ const BudgetPage: React.FC = () => {
           <div className="form-group">
             <label>每月预算 (¥)</label>
             <input
-              type="number"
+              type="text"
+              inputMode="decimal"
               placeholder="0.00"
-              step="0.01"
-              min="0"
               value={budgetAmount}
               onChange={e => setBudgetAmount(e.target.value)}
             />
