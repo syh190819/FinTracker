@@ -12,6 +12,9 @@ backend/.env
 # Runtime logs
 *.log*
 
+# Database backups (contain sensitive data)
+backend/backup_*.sql
+
 # Editor / tool memory
 .workbuddy/
 

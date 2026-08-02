@@ -1,30 +1,30 @@
 import { useCallback, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Button, Drawer, Dropdown, Grid, Modal, message } from 'antd';
+import { Button, Drawer, Dropdown, Grid, Input, Modal, message } from 'antd';
 import {
   UserOutlined,
   LogoutOutlined,
   MenuOutlined,
   HomeOutlined,
   WalletOutlined,
-  AccountBookOutlined,
   BankOutlined,
-  BarChartOutlined,
   TeamOutlined,
   CheckSquareOutlined,
+  FlagOutlined,
+  EditOutlined,
+  KeyOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { todayStr } from '../utils/helpers';
 import * as XLSX from 'xlsx';
 import { importExportApi } from '../services/importExportApi';
+import { profileApi } from '../services/profileApi';
 
 const NAV_TABS = [
   { path: '/', label: '工作台', icon: <HomeOutlined /> },
-  { path: '/expenses', label: '记账', icon: <WalletOutlined /> },
-  { path: '/budgets', label: '预算', icon: <AccountBookOutlined /> },
+  { path: '/plans', label: '计划', icon: <FlagOutlined /> },
+  { path: '/expenses', label: '收支', icon: <WalletOutlined /> },
   { path: '/deposits', label: '存款', icon: <BankOutlined /> },
-  { path: '/statistics', label: '统计', icon: <BarChartOutlined /> },
-  { path: '/sharing', label: '共享', icon: <TeamOutlined /> },
   { path: '/todos', label: '待办', icon: <CheckSquareOutlined /> },
 ];
 
@@ -38,10 +38,53 @@ export default function MainLayout() {
   const [pasteOpen, setPasteOpen] = useState(false);
   const [pasteText, setPasteText] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [profileModal, setProfileModal] = useState<'username' | 'password' | null>(null);
+  const [newUsername, setNewUsername] = useState('');
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [savingProfile, setSavingProfile] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/login', { replace: true });
+  };
+
+  const saveUsername = async () => {
+    const name = newUsername.trim();
+    if (!name) { message.warning('请输入新用户名'); return; }
+    setSavingProfile(true);
+    try {
+      await profileApi.updateUsername({ new_username: name });
+      message.success('用户名已更新');
+      setProfileModal(null);
+      const saved = localStorage.getItem('fintracker_user');
+      if (saved) {
+        const u = JSON.parse(saved);
+        localStorage.setItem('fintracker_user', JSON.stringify({ ...u, username: name }));
+      }
+      window.location.reload();
+    } catch {
+      message.error('更新失败（用户名可能已被占用）');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const savePassword = async () => {
+    if (!oldPassword || !newPassword) { message.warning('请填写完整'); return; }
+    setSavingProfile(true);
+    try {
+      await profileApi.updatePassword({ old_password: oldPassword, new_password: newPassword });
+      message.success('密码已更新');
+      setProfileModal(null);
+      setOldPassword('');
+      setNewPassword('');
+    } catch (e: any) {
+      if (e?.response?.status === 401) message.error('原密码不正确');
+      else message.error('更新失败');
+    } finally {
+      setSavingProfile(false);
+    }
   };
 
   const isActive = (path: string) =>
@@ -139,6 +182,10 @@ export default function MainLayout() {
   }, []);
 
   const userMenuItems = [
+    { key: 'sharing', icon: <TeamOutlined />, label: '共享管理', onClick: () => navigate('/sharing') },
+    { key: 'username', icon: <EditOutlined />, label: '修改用户名', onClick: () => { setNewUsername(user?.username || ''); setProfileModal('username'); } },
+    { key: 'password', icon: <KeyOutlined />, label: '修改密码', onClick: () => { setOldPassword(''); setNewPassword(''); setProfileModal('password'); } },
+    { type: 'divider' as const },
     { key: 'logout', icon: <LogoutOutlined />, label: '退出登录', onClick: handleLogout },
   ];
 
@@ -301,6 +348,55 @@ export default function MainLayout() {
             resize: 'vertical', boxSizing: 'border-box',
           }}
         />
+      </Modal>
+
+      {/* 修改用户名 */}
+      <Modal
+        title="修改用户名"
+        open={profileModal === 'username'}
+        onOk={saveUsername}
+        onCancel={() => setProfileModal(null)}
+        okText="保存"
+        cancelText="取消"
+        confirmLoading={savingProfile}
+        destroyOnHidden
+      >
+        <div style={{ marginBottom: 8, fontSize: 13, color: '#666' }}>新用户名</div>
+        <Input
+          value={newUsername}
+          onChange={(e) => setNewUsername(e.target.value)}
+          maxLength={50}
+          placeholder="请输入新用户名"
+        />
+      </Modal>
+
+      {/* 修改密码 */}
+      <Modal
+        title="修改密码"
+        open={profileModal === 'password'}
+        onOk={savePassword}
+        onCancel={() => setProfileModal(null)}
+        okText="保存"
+        cancelText="取消"
+        confirmLoading={savingProfile}
+        destroyOnHidden
+      >
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ marginBottom: 8, fontSize: 13, color: '#666' }}>原密码</div>
+          <Input.Password
+            value={oldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
+            placeholder="请输入原密码"
+          />
+        </div>
+        <div>
+          <div style={{ marginBottom: 8, fontSize: 13, color: '#666' }}>新密码</div>
+          <Input.Password
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="请输入新密码"
+          />
+        </div>
       </Modal>
     </div>
   );

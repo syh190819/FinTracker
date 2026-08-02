@@ -31,6 +31,10 @@ const ExpensePage: React.FC = () => {
     const n = new URLSearchParams(window.location.search).get('note');
     return n || undefined;
   });
+  const [initialType, setInitialType] = useState<'expense' | 'income' | undefined>(() => {
+    const t = new URLSearchParams(window.location.search).get('type');
+    return t === 'income' || t === 'expense' ? t : undefined;
+  });
 
   const fetchExpenses = useCallback(async () => {
     try {
@@ -85,10 +89,11 @@ const ExpensePage: React.FC = () => {
     date: string,
     note: string,
     planId?: number | null,
+    type?: string,
   ) => {
     try {
-      await expenseApi.create({ amount, category, date, note, plan_id: planId ?? null });
-      message.success('记录成功');
+      await expenseApi.create({ amount, category, date, note, plan_id: planId ?? null, type: type || 'expense' });
+      message.success(type === 'income' ? '收入已记录' : '支出已记录');
       fetchExpenses();
       if (viewMonth === currentMonthStr()) {
         fetchBudgets(viewMonth);
@@ -98,6 +103,7 @@ const ExpensePage: React.FC = () => {
         window.history.replaceState(null, '', window.location.pathname);
         setInitialPlanId(undefined);
         setInitialNote(undefined);
+        setInitialType(undefined);
       }
     } catch {
       message.error('记录失败');
@@ -155,6 +161,7 @@ const ExpensePage: React.FC = () => {
             plans={plans}
             initialPlanId={initialPlanId}
             initialNote={initialNote}
+            initialType={initialType}
             onAdd={handleAddExpense}
             todayTotal={todayTotal}
             todayCount={todayCount}

@@ -5,7 +5,6 @@ import {
   DatePicker,
   Empty,
   Input,
-  InputNumber,
   Modal,
   Progress,
   Segmented,
@@ -28,10 +27,9 @@ import dayjs, { type Dayjs } from 'dayjs';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { todoApi } from '../services/todoApi';
 import { planApi } from '../services/planApi';
-import { depositApi } from '../services/depositApi';
-import type { Plan, PlanWithBalance, Todo } from '../types/api';
+import type { Plan, Todo } from '../types/api';
 import { buildTodoTree, filterTree, type TodoNode } from '../utils/todoTree';
-import { formatMoney, todayStr } from '../utils/helpers';
+import { todayStr } from '../utils/helpers';
 
 type FilterKey = 'all' | 'open' | 'done';
 
@@ -41,7 +39,6 @@ export default function TodosPage() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [archivedPlans, setArchivedPlans] = useState<Plan[]>([]);
-  const [depositPlans, setDepositPlans] = useState<PlanWithBalance[]>([]);
   const [filter, setFilter] = useState<FilterKey>('all');
   const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
@@ -57,29 +54,19 @@ export default function TodosPage() {
   const [todoParent, setTodoParent] = useState<Todo | null>(null);
   const [savingTodo, setSavingTodo] = useState(false);
 
-  // 计划弹窗
-  const [planModalOpen, setPlanModalOpen] = useState(false);
-  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
-  const [planName, setPlanName] = useState('');
-  const [planDeadline, setPlanDeadline] = useState<Dayjs | null>(null);
-  const [planProgress, setPlanProgress] = useState(0);
-  const [savingPlan, setSavingPlan] = useState(false);
-
   const today = todayStr();
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [todoData, planData, archivedData, depositData] = await Promise.all([
+      const [todoData, planData, archivedData] = await Promise.all([
         todoApi.list(),
         planApi.list({ archived: false }),
         planApi.list({ archived: true }),
-        depositApi.listPlans(),
       ]);
       setTodos(todoData);
       setPlans(planData);
       setArchivedPlans(archivedData);
-      setDepositPlans(depositData);
     } catch {
       message.error('加载数据失败');
     } finally {
@@ -91,11 +78,17 @@ export default function TodosPage() {
     load();
   }, [load]);
 
-  // 工作台"新建计划"快捷入口
+  // 快捷入口：/todos?plan=X 预选计划 / newPlan 跳计划页
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    if (params.get('newPlan')) {
-      openPlanCreate();
+    const planId = params.get('plan');
+    if (planId) {
+      openTodoCreate(Number(planId));
+    } else if (params.get('newPlan')) {
+      navigate('/plans', { replace: true });
+      return;
+    }
+    if (planId || params.get('newPlan')) {
       window.history.replaceState(null, '', window.location.pathname);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -208,88 +201,6 @@ export default function TodosPage() {
       onOk: async () => {
         try {
           await todoApi.delete(todo.id);
-          message.success('已删除');
-          load();
-        } catch {
-          message.error('删除失败');
-        }
-      },
-    });
-  };
-
-  // ── 计划弹窗 ──
-  const openPlanCreate = () => {
-    setEditingPlan(null);
-    setPlanName('');
-    setPlanDeadline(null);
-    setPlanProgress(0);
-    setPlanModalOpen(true);
-  };
-
-  const openPlanEdit = (plan: Plan) => {
-    setEditingPlan(plan);
-    setPlanName(plan.name);
-    setPlanDeadline(plan.deadline ? dayjs(plan.deadline) : null);
-    setPlanProgress(plan.progress);
-    setPlanModalOpen(true);
-  };
-
-  const handlePlanSave = async () => {
-    const trimmed = planName.trim();
-    if (!trimmed) {
-      message.warning('请输入计划名称');
-      return;
-    }
-    setSavingPlan(true);
-    try {
-      const payload = {
-        name: trimmed,
-        deadline: planDeadline ? planDeadline.format('YYYY-MM-DD') : null,
-        progress: planProgress,
-      };
-      if (editingPlan) {
-        await planApi.update(editingPlan.id, payload);
-      } else {
-        await planApi.create(payload);
-      }
-      message.success(editingPlan ? '已保存' : '已创建');
-      setPlanModalOpen(false);
-      load();
-    } catch {
-      message.error('保存失败');
-    } finally {
-      setSavingPlan(false);
-    }
-  };
-
-  const handlePlanArchive = (plan: Plan) => {
-    Modal.confirm({
-      title: '归档计划',
-      content: `确认归档 "${plan.name}"？归档后可在"已归档"中回顾。`,
-      okText: '归档',
-      cancelText: '取消',
-      onOk: async () => {
-        try {
-          await planApi.update(plan.id, { archived: true });
-          message.success('已归档');
-          load();
-        } catch {
-          message.error('归档失败');
-        }
-      },
-    });
-  };
-
-  const handlePlanDelete = (plan: Plan) => {
-    Modal.confirm({
-      title: '删除计划',
-      content: `确认删除 "${plan.name}"？关联待办不会被删除。`,
-      okText: '删除',
-      cancelText: '取消',
-      okButtonProps: { danger: true },
-      onOk: async () => {
-        try {
-          await planApi.delete(plan.id);
           message.success('已删除');
           load();
         } catch {
@@ -424,9 +335,9 @@ export default function TodosPage() {
           gap: 12,
         }}
       >
-        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>待办与计划</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>待办</h1>
         <Space wrap>
-          <Button icon={<FlagOutlined />} onClick={openPlanCreate}>
+          <Button icon={<FlagOutlined />} onClick={() => navigate('/plans')}>
             新建计划
           </Button>
           <Button type="primary" icon={<PlusOutlined />} onClick={() => openTodoCreate()}>
@@ -453,48 +364,6 @@ export default function TodosPage() {
         </div>
       ) : (
         <>
-          {/* 存款计划 */}
-          {depositPlans.length > 0 && (
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#666', marginBottom: 8 }}>
-                存款计划
-              </div>
-              {depositPlans.map((d) => (
-                <div
-                  key={d.plan.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    padding: '10px 14px',
-                    background: '#fff',
-                    borderRadius: 8,
-                    border: '1px solid #f0f0f0',
-                    marginBottom: 6,
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <BankOutlined style={{ color: '#1a1a2e', flexShrink: 0 }} />
-                  <span style={{ fontWeight: 600, flexShrink: 0 }}>{d.plan.name}</span>
-                  <Tag color="geekblue" style={{ marginInlineEnd: 0 }}>
-                    存款计划
-                  </Tag>
-                  {d.plan.auto_todo_enabled && (
-                    <Tag style={{ marginInlineEnd: 0 }}>
-                      每月 {d.plan.auto_todo_day} 号提醒
-                    </Tag>
-                  )}
-                  <span style={{ fontSize: 12, color: '#999', flex: 1, minWidth: 120 }}>
-                    月目标 {formatMoney(d.plan.monthly_goal)} · 余额 {formatMoney(d.balance)}
-                  </span>
-                  <Button size="small" onClick={() => navigate('/deposits')}>
-                    去管理
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-
           {/* 计划分组 */}
           {plans.map((plan) => {
             const nodes = planNodes(plan.id);
@@ -519,11 +388,6 @@ export default function TodosPage() {
                   {plan.deadline && (
                     <span style={{ fontSize: 12, color: '#999' }}>截止 {plan.deadline}</span>
                   )}
-                  {plan.expense_total > 0 && (
-                    <Tag color="blue" style={{ marginInlineEnd: 0 }}>
-                      关联支出 ¥{plan.expense_total.toFixed(2)}
-                    </Tag>
-                  )}
                   <div style={{ flex: 1, minWidth: 120, maxWidth: 220 }}>
                     <Progress
                       percent={plan.progress}
@@ -536,25 +400,8 @@ export default function TodosPage() {
                     <Button size="small" icon={<PlusOutlined />} onClick={() => openTodoCreate(plan.id)}>
                       添加待办
                     </Button>
-                    <Button
-                      size="small"
-                      onClick={() =>
-                        navigate(`/expenses?plan_id=${plan.id}&note=${encodeURIComponent(plan.name)}`)
-                      }
-                    >
-                      记一笔
-                    </Button>
                     <Button size="small" onClick={() => togglePlanTree(plan.id)}>
                       {tree ? '收起任务' : '展开任务'}
-                    </Button>
-                    <Button size="small" onClick={() => openPlanEdit(plan)}>
-                      编辑
-                    </Button>
-                    <Button size="small" onClick={() => handlePlanArchive(plan)}>
-                      归档
-                    </Button>
-                    <Button size="small" danger onClick={() => handlePlanDelete(plan)}>
-                      删除
                     </Button>
                   </Space>
                 </div>
@@ -637,7 +484,6 @@ export default function TodosPage() {
           )}
 
           {plans.length === 0 &&
-            depositPlans.length === 0 &&
             ungroupedNodes.length === 0 &&
             archivedPlans.length === 0 && (
               <Empty description="暂无内容，新建一个计划或待办吧" style={{ padding: 60 }} />
@@ -705,53 +551,6 @@ export default function TodosPage() {
         </div>
       </Modal>
 
-      {/* 计划弹窗 */}
-      <Modal
-        title={editingPlan ? '编辑计划' : '新建计划'}
-        open={planModalOpen}
-        onOk={handlePlanSave}
-        onCancel={() => setPlanModalOpen(false)}
-        okText="保存"
-        cancelText="取消"
-        confirmLoading={savingPlan}
-        destroyOnHidden
-      >
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>名称 *</div>
-          <Input
-            value={planName}
-            onChange={(e) => setPlanName(e.target.value)}
-            placeholder="如：年底存 2 万"
-            maxLength={100}
-          />
-        </div>
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>截止日期</div>
-          <DatePicker
-            style={{ width: '100%' }}
-            value={planDeadline}
-            onChange={(d) => setPlanDeadline(d)}
-            placeholder="不填表示无期限"
-            allowClear
-          />
-        </div>
-        <div>
-          <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>进度（0-100%）</div>
-          <InputNumber
-            style={{ width: '100%' }}
-            min={0}
-            max={100}
-            value={planProgress}
-            onChange={(v) => setPlanProgress(v ?? 0)}
-            disabled={!!editingPlan && editingPlan.total_count > 0}
-          />
-          {!!editingPlan && editingPlan.total_count > 0 && (
-            <div style={{ fontSize: 12, color: '#999', marginTop: 6 }}>
-              该计划已有待办，进度按待办完成情况自动计算
-            </div>
-          )}
-        </div>
-      </Modal>
     </div>
   );
 }

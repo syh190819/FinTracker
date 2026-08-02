@@ -8,7 +8,8 @@ interface Props {
   plans: Plan[];
   initialPlanId?: number;
   initialNote?: string;
-  onAdd: (amount: number, category: string, date: string, note: string, planId?: number | null) => void;
+  initialType?: 'expense' | 'income';
+  onAdd: (amount: number, category: string, date: string, note: string, planId?: number | null, type?: string) => void;
   todayTotal: number;
   todayCount: number;
   showDialog: ShowDialogFn;
@@ -16,6 +17,7 @@ interface Props {
 
 const ExpenseForm: React.FC<Props> = ({
   categoryNames, plans, initialPlanId, initialNote,
+  initialType,
   onAdd, todayTotal, todayCount, showDialog,
 }) => {
   const [amount, setAmount] = useState('');
@@ -23,12 +25,13 @@ const ExpenseForm: React.FC<Props> = ({
   const [date, setDate] = useState(todayStr());
   const [note, setNote] = useState('');
   const [planId, setPlanId] = useState<number | undefined>(undefined);
+  const [type, setType] = useState<'expense' | 'income'>(initialType || 'expense');
 
   useEffect(() => {
     setDate(todayStr());
     if (initialNote) setNote(initialNote);
     if (initialPlanId !== undefined) setPlanId(initialPlanId);
-  }, [initialNote, initialPlanId]);
+  }, [initialNote, initialPlanId, initialType]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,10 +44,11 @@ const ExpenseForm: React.FC<Props> = ({
       showDialog({ mode: 'alert', title: '提示', message: '请选择品类' });
       return;
     }
-    onAdd(amt, category, date, note, planId);
+    onAdd(amt, category, date, note, planId, type);
     setAmount('');
     setNote('');
     setPlanId(undefined);
+    setType('expense');
   };
 
   return (
@@ -65,17 +69,26 @@ const ExpenseForm: React.FC<Props> = ({
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="form-row">
-          <div className="form-group">
-            <label>金额 (¥)</label>
-            <input
-              type="number"
-              placeholder="0.00"
-              step="0.01"
-              min="0"
-              value={amount}
-              onChange={e => setAmount(e.target.value)}
-            />
+      <div className="form-row">
+        <div className="form-group">
+          <label>类型</label>
+          <select
+            value={type}
+            onChange={e => setType(e.target.value as 'expense' | 'income')}
+          >
+            <option value="expense">支出</option>
+            <option value="income">收入</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label>金额 (¥)</label>
+          <input
+            type="text"
+            inputMode="decimal"
+            placeholder="0.00"
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+          />
           </div>
           <div className="form-group">
             <label>品类</label>

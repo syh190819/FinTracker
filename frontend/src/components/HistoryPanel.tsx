@@ -54,8 +54,8 @@ const HistoryPanel: React.FC<Props> = ({ expenses, onDelete, showDialog }) => {
               records.map(r => (
                 <div className="record-item" key={r.id}>
                   <span className="rec-cat">{r.category}</span>
-                  <span className="rec-amount" style={{ color: 'var(--danger)' }}>
-                    -{formatMoney(r.amount)}
+                  <span className="rec-amount" style={{ color: r.type === 'income' ? 'var(--success)' : 'var(--danger)' }}>
+                    {r.type === 'income' ? '+' : '-'}{formatMoney(r.amount)}
                   </span>
                   <span className="rec-date">{r.date}</span>
                   {r.plan_name && (

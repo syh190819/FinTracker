@@ -42,6 +42,7 @@ export interface Expense {
   id: number;
   user_id: number;
   amount: number;
+  type: string;
   category: string;
   date: string;
   note: string;
@@ -66,6 +67,7 @@ export interface CreateExpense {
   date: string;
   note?: string;
   plan_id?: number | null;
+  type?: string;
 }
 
 export interface UpdateExpense {
@@ -74,6 +76,7 @@ export interface UpdateExpense {
   date?: string;
   note?: string;
   plan_id?: number | null;
+  type?: string;
 }
 
 // === Budgets ===
@@ -99,24 +102,6 @@ export interface UpdateBudget {
   split_by_day?: boolean;
 }
 
-// === Deposits ===
-export interface DepositPlan {
-  id: number;
-  user_id: number;
-  name: string;
-  category: string;
-  monthly_goal: number;
-  sort_order: number;
-  auto_todo_enabled: boolean;
-  auto_todo_day: number;
-  deleted_at: string | null;
-}
-
-export interface PlanWithBalance {
-  plan: DepositPlan;
-  balance: number;
-}
-
 export interface DepositTransaction {
   id: number;
   plan_id: number;
@@ -130,23 +115,6 @@ export interface DepositTransaction {
   updated_by: number | null;
   updated_at: string | null;
   deleted_at: string | null;
-}
-
-export interface CreateDepositPlan {
-  name: string;
-  category?: string;
-  monthly_goal?: number;
-  auto_todo_enabled?: boolean;
-  auto_todo_day?: number;
-}
-
-export interface UpdateDepositPlan {
-  name?: string;
-  category?: string;
-  monthly_goal?: number;
-  sort_order?: number;
-  auto_todo_enabled?: boolean;
-  auto_todo_day?: number;
 }
 
 export interface CreateTransaction {
@@ -233,10 +201,18 @@ export interface Plan {
   user_id: number;
   name: string;
   deadline: string | null;
+  plan_types: string[];
+  income_goal: number;
+  expense_limit: number;
+  monthly_goal: number;
+  auto_todo_enabled: boolean;
+  auto_todo_day: number;
   progress: number;
   done_count: number;
   total_count: number;
   expense_total: number;
+  income_total: number;
+  balance: number;
   archived: boolean;
   archived_at: string | null;
   created_at: string;
@@ -247,12 +223,24 @@ export interface Plan {
 export interface CreatePlan {
   name: string;
   deadline?: string | null;
+  plan_types: string[];
+  income_goal?: number;
+  expense_limit?: number;
+  monthly_goal?: number;
+  auto_todo_enabled?: boolean;
+  auto_todo_day?: number;
   progress?: number;
 }
 
 export interface UpdatePlan {
   name?: string;
   deadline?: string | null;
+  plan_types?: string[];
+  income_goal?: number;
+  expense_limit?: number;
+  monthly_goal?: number;
+  auto_todo_enabled?: boolean;
+  auto_todo_day?: number;
   progress?: number;
   archived?: boolean;
 }
@@ -262,10 +250,23 @@ export interface WorkbenchSummary {
   month_total: number; // 个人 + 共享
   month_personal: number;
   month_shared: number;
+  month_income: number;
+  month_income_personal: number;
+  month_income_shared: number;
   month_budget: number;
   today_todo_count: number;
   open_todo_count: number;
   active_plan_count: number;
   recent_todos: Todo[];
   active_plans: Plan[];
+}
+
+// === Profile ===
+export interface UpdateUsernameRequest {
+  new_username: string;
+}
+
+export interface UpdatePasswordRequest {
+  old_password: string;
+  new_password: string;
 }
